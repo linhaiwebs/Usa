@@ -54,6 +54,10 @@ router.put('/templates/:name/files', (req, res) => {
   if (!ok) return res.status(404).json({ error: 'Template not found' });
   res.json({ success: true });
 });
+router.put('/templates/:name/settings', (req, res) => {
+  const result = templateService.updateTemplateSettings(req.params.name, req.body);
+  res.json(result);
+});
 router.post('/templates/:name/sync', async (req, res) => {
   try {
     const result = await templateService.syncFromGithub(req.params.name);

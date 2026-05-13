@@ -29,8 +29,29 @@ function listTemplates() {
   const settings = getSettings();
   return dirs.map(name => {
     const tmpl = settings.templates.find(t => t.name === name) || { name, githubRepo: '', lastSync: null };
-    return tmpl;
+    // Read version from config.json
+    let version = '';
+    try {
+      const configPath = path.join(TEMPLATES_DIR, name, 'config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        version = config.version || '';
+      }
+    } catch (_) { /* ignore */ }
+    return { ...tmpl, version };
   });
+}
+
+function updateTemplateSettings(name, data) {
+  const settings = getSettings();
+  let tmpl = settings.templates.find(t => t.name === name);
+  if (!tmpl) {
+    tmpl = { name, githubRepo: '', lastSync: null };
+    settings.templates.push(tmpl);
+  }
+  if (data.githubRepo !== undefined) tmpl.githubRepo = data.githubRepo;
+  storage.write(FILE, settings);
+  return tmpl;
 }
 
 function setActiveTemplate(name) {
@@ -85,4 +106,4 @@ async function syncFromGithub(templateName) {
   return { success: true, lastSync: tmpl.lastSync };
 }
 
-module.exports = { getSettings, getActiveTemplate, listTemplates, setActiveTemplate, getTemplateFiles, saveTemplateFile, getTemplatePath, syncFromGithub };
+module.exports = { getSettings, getActiveTemplate, listTemplates, setActiveTemplate, getTemplateFiles, saveTemplateFile, getTemplatePath, syncFromGithub, updateTemplateSettings };
