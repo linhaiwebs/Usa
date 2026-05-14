@@ -1,3 +1,10 @@
+let cmInstance = null;
+
+function getModeForFile(filename) {
+  if (filename === 'template.html') return 'xml';
+  return { name: 'javascript', json: true };
+}
+
 async function renderTemplates() {
   const container = document.getElementById('page-container');
 
@@ -16,8 +23,13 @@ async function renderTemplates() {
       <div class="card">
         <div class="card-header">
           <span>模板列表</span>
-          <div class="btn-group" style="align-items:center">
-            <input id="global-github-repo" placeholder="GitHub 仓库地址" value="${escHtml(settingsRepo)}" style="padding:4px 8px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:11px;width:260px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="btn-group" id="filter-btns">
+              <button class="btn btn-sm cat-filter active" data-cat="全部" onclick="filterByCategory('全部', this)">全部</button>
+              <button class="btn btn-sm cat-filter" data-cat="人设" onclick="filterByCategory('人设', this)">人设</button>
+              <button class="btn btn-sm cat-filter" data-cat="诊股" onclick="filterByCategory('诊股', this)">诊股</button>
+            </div>
+            <input id="global-github-repo" placeholder="GitHub 仓库地址" value="${escHtml(settingsRepo)}" style="padding:4px 8px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:11px;width:200px">
             <button class="btn btn-sm btn-success" onclick="syncAllTemplates()">从 GitHub 同步</button>
           </div>
         </div>
@@ -26,6 +38,7 @@ async function renderTemplates() {
             <thead>
               <tr>
                 <th>模板</th>
+                <th>域名</th>
                 <th>版本</th>
                 <th>状态</th>
                 <th>操作</th>
@@ -33,8 +46,13 @@ async function renderTemplates() {
             </thead>
             <tbody>
               ${templates.map(t => `
-                <tr${t.name === activeName ? ' class="row-active"' : ''}>
-                  <td><strong>${escHtml(t.name)}</strong></td>
+                <tr${t.name === activeName ? ' class="row-active"' : ''} data-category="${escHtml(t.category || '人设')}">
+                  <td><strong>#${t.categoryIndex || 1} ${escHtml(t.name)}</strong> <span class="badge badge-cat clickable" onclick="saveCategory('${escAttr(t.name)}', '${t.category === '人设' ? '诊股' : '人设'}')" title="点击切换分类">${escHtml(t.category || '人设')}</span></td>
+                  <td>
+                    <input class="domain-input" value="${escHtml(t.domain || '')}" placeholder="example.com"
+                      data-template="${escAttr(t.name)}"
+                      onblur="saveDomain(this)" onkeydown="if(event.key==='Enter')this.blur()">
+                  </td>
                   <td class="text-muted">${t.version || '—'}</td>
                   <td>${t.name === activeName
                     ? '<span class="badge badge-green">当前</span>'
@@ -43,9 +61,9 @@ async function renderTemplates() {
                   <td>
                     <div class="btn-group">
                       <button class="btn btn-sm" onclick="openEditor('${escAttr(t.name)}', 'template.html')">编辑 HTML</button>
-                      <button class="btn btn-sm" onclick="openEditor('${escAttr(t.name)}', 'style.css')">编辑 CSS</button>
                       <button class="btn btn-sm" onclick="openEditor('${escAttr(t.name)}', 'config.json')">编辑配置</button>
                       <button class="btn btn-sm" onclick="openPopupEditor('${escAttr(t.name)}')">弹窗</button>
+                      <button class="btn btn-sm btn-success" onclick="previewTemplate('${escAttr(t.name)}', '${escAttr(t.domain || '')}')">预览</button>
                     </div>
                   </td>
                 </tr>
@@ -62,13 +80,12 @@ async function renderTemplates() {
             <span id="editor-title">编辑文件</span>
             <div class="btn-group" style="margin:0 12px">
               <button class="btn btn-sm tab-item active" data-file="template.html" onclick="switchEditorTab('template.html', this)">HTML</button>
-              <button class="btn btn-sm tab-item" data-file="style.css" onclick="switchEditorTab('style.css', this)">CSS</button>
               <button class="btn btn-sm tab-item" data-file="config.json" onclick="switchEditorTab('config.json', this)">配置</button>
             </div>
             <button class="btn btn-sm" onclick="closeEditor()" style="margin-left:auto">&times; 关闭</button>
           </div>
           <div class="code-status" id="editor-status">就绪</div>
-          <textarea id="modal-code-editor" class="form-group code-editor" style="min-height:420px" onkeyup="markEditorUnsaved()"></textarea>
+          <div id="code-editor-container"></div>
           <div class="btn-group" style="margin-top:10px">
             <button class="btn btn-primary" onclick="saveCurrentFile()">保存文件 (Ctrl+S)</button>
             <span id="editor-save-status" style="font-size:11px;color:var(--green);display:none">已保存 — 页面将热重载</span>
@@ -138,6 +155,77 @@ async function renderTemplates() {
       } catch (e) { showToast(e.message, 'error'); }
     };
 
+    // ---- 域名编辑 ----
+    window.saveDomain = async (input) => {
+      const name = input.getAttribute('data-template');
+      const domain = input.value.trim();
+      try {
+        await API.put(`/api/templates/${name}/settings`, { domain });
+        showToast(`域名已保存: ${domain || '(已清空)'}`, 'success');
+      } catch (e) { showToast(e.message, 'error'); }
+    };
+
+    // ---- 分类筛选 ----
+    window.filterByCategory = (cat, btn) => {
+      document.querySelectorAll('.cat-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('tbody tr').forEach(tr => {
+        const rowCat = tr.getAttribute('data-category');
+        tr.style.display = (cat === '全部' || rowCat === cat) ? '' : 'none';
+      });
+    };
+
+    // ---- 分类编辑（点击徽章切换）----
+    window.saveCategory = async (name, category) => {
+      try {
+        await API.put(`/api/templates/${name}/category`, { category });
+        showToast(`${name} → ${category}`, 'success');
+        renderTemplates();
+      } catch (e) { showToast(e.message, 'error'); }
+    };
+
+    // ---- 预览模板 ----
+    window.previewTemplate = (name, domain) => {
+      let url;
+      if (domain) {
+        url = 'https://' + domain;
+      } else {
+        url = window.location.origin + '/_preview/' + encodeURIComponent(name);
+      }
+      window.open(url, '_blank', 'noopener');
+    };
+
+    // ---- CodeMirror 初始化 ----
+    function initCodeMirror() {
+      if (cmInstance) return;
+      const container = document.getElementById('code-editor-container');
+      if (!container) return;
+      cmInstance = CodeMirror(container, {
+        value: '',
+        mode: 'xml',
+        theme: 'monokai',
+        lineNumbers: true,
+        tabSize: 2,
+        indentWithTabs: false,
+        lineWrapping: true,
+        viewportMargin: Infinity
+      });
+      cmInstance.on('change', function () {
+        const changed = cmInstance.getValue() !== editorOriginal;
+        document.getElementById('editor-status').textContent = changed
+          ? `${editorFile} — 未保存的更改`
+          : `${editorFile}`;
+      });
+    }
+
+    function destroyCodeMirror() {
+      if (cmInstance) {
+        const el = cmInstance.getWrapperElement();
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+        cmInstance = null;
+      }
+    }
+
     // ---- 文件编辑器 ----
     window.openEditor = async (name, file) => {
       editorTemplate = name;
@@ -146,16 +234,33 @@ async function renderTemplates() {
         const files = await API.get(`/api/templates/${name}/files`);
         const content = files[file] || '';
         editorOriginal = content;
-        const editor = document.getElementById('modal-code-editor');
-        editor.value = content;
+
+        // Destroy old CM instance and re-create container
+        destroyCodeMirror();
+        const oldContainer = document.getElementById('code-editor-container');
+        if (oldContainer) oldContainer.remove();
+        const newContainer = document.createElement('div');
+        newContainer.id = 'code-editor-container';
+        const modalContent = document.getElementById('editor-modal').querySelector('.modal-content');
+        const btnGroup = modalContent.querySelectorAll('.btn-group')[1];
+        modalContent.insertBefore(newContainer, btnGroup);
+
+        initCodeMirror();
+        cmInstance.setValue(content);
+        cmInstance.setOption('mode', getModeForFile(file));
+        cmInstance.refresh();
+
         document.getElementById('editor-title').textContent = `${name} / ${file}`;
         document.getElementById('editor-status').textContent = `${file} — ${content.length} 字符`;
         document.getElementById('editor-save-status').style.display = 'none';
+
+        // Highlight active tab
         document.querySelectorAll('#editor-modal .tab-item').forEach(t => {
           t.classList.toggle('active', t.getAttribute('data-file') === file);
         });
+
         document.getElementById('editor-modal').style.display = 'flex';
-        editor.focus();
+        setTimeout(() => { if (cmInstance) cmInstance.refresh(); }, 100);
       } catch (e) { showToast(e.message, 'error'); }
     };
 
@@ -172,24 +277,19 @@ async function renderTemplates() {
         const files = await API.get(`/api/templates/${editorTemplate}/files`);
         const content = files[file] || '';
         editorOriginal = content;
-        const editor = document.getElementById('modal-code-editor');
-        editor.value = content;
+        if (cmInstance) {
+          cmInstance.setValue(content);
+          cmInstance.setOption('mode', getModeForFile(file));
+          cmInstance.refresh();
+        }
         document.getElementById('editor-title').textContent = `${editorTemplate} / ${file}`;
         document.getElementById('editor-status').textContent = `${file} — ${content.length} 字符`;
         document.getElementById('editor-save-status').style.display = 'none';
       } catch (e) { showToast(e.message, 'error'); }
     };
 
-    window.markEditorUnsaved = () => {
-      const editor = document.getElementById('modal-code-editor');
-      const changed = editor.value !== editorOriginal;
-      document.getElementById('editor-status').textContent = changed
-        ? `${editorFile} — 未保存的更改`
-        : `${editorFile}`;
-    };
-
     window.saveCurrentFile = async () => {
-      const content = document.getElementById('modal-code-editor').value;
+      const content = cmInstance ? cmInstance.getValue() : '';
       try {
         await API.put(`/api/templates/${editorTemplate}/files`, { filename: editorFile, content });
         editorOriginal = content;

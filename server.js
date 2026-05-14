@@ -117,20 +117,32 @@ app.use('/api', (req, res, next) => {
   res.status(401).json({ error: 'Unauthorized' });
 });
 
+// Preview any template (public, no auth)
+function serveTemplate(name, res) {
+  const dir = path.join(TEMPLATES_DIR, name);
+  if (!fs.existsSync(dir)) return res.status(404).send('Template not found.');
+
+  const htmlPath = path.join(dir, 'template.html');
+  if (!fs.existsSync(htmlPath)) return res.status(404).send('Template HTML file missing.');
+
+  let html = fs.readFileSync(htmlPath, 'utf-8');
+  const popup = popupService.get(name);
+  const splitEntry = splitService.getRandom();
+  const splitUrl = splitEntry ? splitEntry.url : '';
+  html = injector.inject(html, { popup, splitUrl });
+  res.send(html);
+}
+
+app.get('/_preview/:name', (req, res) => {
+  serveTemplate(req.params.name, res);
+});
+
 // Landing page (public)
 app.get('/', (req, res) => {
   const active = templateService.getActiveTemplate();
   if (!active.exists) return res.status(404).send('No active template found. Set one up in <a href="/adsadmin">Admin Panel</a>.');
 
-  const htmlPath = path.join(active.dir, 'template.html');
-  if (!fs.existsSync(htmlPath)) return res.status(404).send('Template HTML file missing.');
-
-  let html = fs.readFileSync(htmlPath, 'utf-8');
-  const popup = popupService.get(active.name);
-  const splitEntry = splitService.getRandom();
-  const splitUrl = splitEntry ? splitEntry.url : '';
-  html = injector.inject(html, { popup, splitUrl });
-  res.send(html);
+  serveTemplate(active.name, res);
 });
 
 // API routes

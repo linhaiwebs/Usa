@@ -1,17 +1,32 @@
 const analyticsService = require('../services/analytics-service');
 
 function getGAScript(config) {
-  if (!config.enabled || !config.gtmId) return '';
-  const gtm = config.gtmId;
-  let ads = '';
-  if (config.adsConversionId) {
-    ads = `\n  gtag('config', '${config.adsConversionId}'${config.adsConversionLabel ? `, { 'conversion_label': '${config.adsConversionLabel}' }` : ''});`;
+  if (!config.enabled || (!config.gtagId && !config.ga4Id)) return '';
+
+  const gtagId = config.gtagId || '';
+  const ga4Id = config.ga4Id || '';
+  const conversionId = config.conversionId || '';
+
+  let lines = [];
+  if (gtagId) {
+    lines.push(`<script async src="https://www.googletagmanager.com/gtag/js?id=${gtagId}"></script>`);
+  } else if (ga4Id) {
+    lines.push(`<script async src="https://www.googletagmanager.com/gtag/js?id=${ga4Id}"></script>`);
   }
-  return `<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm}');</script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=${gtm}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gtm}');${ads}</script>
-<!-- End Google Tag Manager -->`;
+  lines.push('<script>');
+  lines.push('window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}');
+  lines.push("gtag('js',new Date());");
+  if (gtagId) lines.push(`gtag('config','${gtagId}');`);
+  if (ga4Id) lines.push(`gtag('config','${ga4Id}');`);
+  if (conversionId) {
+    lines.push(`function gtag_report_conversion(url){`);
+    lines.push(`var callback=function(){if(typeof url!=='undefined'){window.location=url;}};`);
+    lines.push(`gtag('event','Add');`);
+    lines.push(`gtag('event','conversion',{'send_to':'${conversionId}','transaction_id':'','event_callback':callback});`);
+    lines.push(`return false;}`);
+  }
+  lines.push('<\/script>');
+  return lines.join('\n');
 }
 
 function getPopupCSS() {
@@ -54,8 +69,8 @@ function getPopupScript(config, splitUrl) {
 
   function splitUrl() { return '${(splitUrl || '#').replace(/'/g, "\\'")}'; }
 
-  function createPopup() {
-    if (shown && cfg.showOnce) return;
+  function createPopup(manual) {
+    if (shown && cfg.showOnce && !manual) return;
     var overlay = document.createElement('div');
     overlay.className = 'lp-popup-overlay';
     overlay.id = 'lp-popup';
@@ -71,12 +86,17 @@ function getPopupScript(config, splitUrl) {
     isOpen = true;
     document.body.style.overflow = 'hidden';
 
-    // Wire up CTA links with split URL after DOM insert
+    // Wire up CTA links with split URL + conversion tracking
     var cta = overlay.querySelector('[data-cta="split"]');
     if (cta) {
       cta.addEventListener('click', function(e) {
         e.preventDefault();
-        window.location.href = splitUrl();
+        var url = splitUrl();
+        if (typeof gtag_report_conversion === 'function') {
+          gtag_report_conversion(url);
+        } else {
+          window.location.href = url;
+        }
       });
     }
 
@@ -101,7 +121,7 @@ function getPopupScript(config, splitUrl) {
 
   window.showSitePopup = function() {
     if (isOpen) return;
-    createPopup();
+    createPopup(true);
     if (typeof gtag !== 'undefined') {
       gtag('event', 'cta_click', { event_category: 'popup', event_label: 'manual_trigger' });
     }

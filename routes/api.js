@@ -58,6 +58,11 @@ router.put('/templates/:name/settings', (req, res) => {
   const result = templateService.updateTemplateSettings(req.params.name, req.body);
   res.json(result);
 });
+router.put('/templates/:name/category', (req, res) => {
+  const result = templateService.updateTemplateCategory(req.params.name, req.body.category);
+  if (!result) return res.status(404).json({ error: 'Template not found' });
+  res.json(result);
+});
 router.post('/templates/:name/sync', async (req, res) => {
   try {
     const repoUrl = req.body.repoUrl || '';

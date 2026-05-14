@@ -178,6 +178,64 @@ body {
 .btn-sm { padding: 4px 10px; font-size: 11px; }
 .btn-group { display: flex; gap: 6px; }
 
+/* Domain input in table */
+.domain-input {
+  width: 100%;
+  max-width: 200px;
+  padding: 5px 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.domain-input:focus {
+  border-color: var(--accent);
+}
+.domain-input::placeholder {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Category filter buttons */
+.cat-filter {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.cat-filter:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.cat-filter.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Category badge in table */
+.badge-cat {
+  background: rgba(88,166,255,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(88,166,255,0.3);
+}
+.badge-cat.clickable {
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.badge-cat.clickable:hover {
+  background: rgba(88,166,255,0.25);
+  border-color: var(--accent);
+}
+
 /* Tables */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -231,14 +289,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .toast.error { border-color: var(--red); }
 @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Code editor */
-.code-editor {
+/* CodeMirror container */
+#code-editor-container {
+  height: 62vh;
+  min-height: 380px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+#code-editor-container .CodeMirror {
+  height: 100%;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
-  min-height: 350px;
-  tab-size: 2;
-  background: #0d1117;
 }
 .code-status {
   font-size: 11px;

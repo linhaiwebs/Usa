@@ -28,18 +28,35 @@ function listTemplates() {
     .filter(d => d.isDirectory())
     .map(d => d.name);
   const settings = getSettings();
-  return dirs.map(name => {
-    const tmpl = settings.templates.find(t => t.name === name) || { name, githubRepo: '', lastSync: null, lastSyncHash: '' };
-    let version = '';
+
+  let list = dirs.map(name => {
+    const tmpl = settings.templates.find(t => t.name === name) || { name, githubRepo: '', domain: '', lastSync: null, lastSyncHash: '' };
+    let version = '', category = '人设';
     try {
       const configPath = path.join(TEMPLATES_DIR, name, 'config.json');
       if (fs.existsSync(configPath)) {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         version = config.version || '';
+        category = config.category || '人设';
       }
     } catch (_) { /* ignore */ }
-    return { ...tmpl, version };
+    return { ...tmpl, version, category };
   });
+
+  // Sort by category then by name, assign auto-increment index per category
+  list.sort((a, b) => {
+    if (a.category !== b.category) return (a.category || '').localeCompare(b.category || '');
+    return a.name.localeCompare(b.name);
+  });
+
+  const catCount = {};
+  list.forEach(t => {
+    if (!catCount[t.category]) catCount[t.category] = 0;
+    catCount[t.category]++;
+    t.categoryIndex = catCount[t.category];
+  });
+
+  return list;
 }
 
 function setActiveTemplate(name) {
@@ -78,10 +95,11 @@ function updateTemplateSettings(name, data) {
   const settings = getSettings();
   let tmpl = settings.templates.find(t => t.name === name);
   if (!tmpl) {
-    tmpl = { name, githubRepo: '', lastSync: null, lastSyncHash: '' };
+    tmpl = { name, githubRepo: '', domain: '', lastSync: null, lastSyncHash: '' };
     settings.templates.push(tmpl);
   }
   if (data.githubRepo !== undefined) tmpl.githubRepo = data.githubRepo;
+  if (data.domain !== undefined) tmpl.domain = data.domain;
   storage.write(FILE, settings);
   return tmpl;
 }
@@ -242,4 +260,13 @@ function backupDir(srcDir) {
   return tmpBackup;
 }
 
-module.exports = { getSettings, getActiveTemplate, listTemplates, setActiveTemplate, getTemplateFiles, saveTemplateFile, getTemplatePath, syncFromGithub, updateTemplateSettings, computeTemplateHash };
+function updateTemplateCategory(name, category) {
+  const configPath = path.join(TEMPLATES_DIR, name, 'config.json');
+  if (!fs.existsSync(configPath)) return null;
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  config.category = category;
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+  return config;
+}
+
+module.exports = { getSettings, getActiveTemplate, listTemplates, setActiveTemplate, getTemplateFiles, saveTemplateFile, getTemplatePath, syncFromGithub, updateTemplateSettings, updateTemplateCategory, computeTemplateHash };
