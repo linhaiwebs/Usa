@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADS Admin — Login</title>
+  <link rel="stylesheet" href="/adsadmin/css/admin.css">
+  <style>
+    .login-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(800px 500px at 20% 0%, rgba(88,166,255,0.10), transparent 60%),
+        radial-gradient(700px 500px at 80% 100%, rgba(31,111,235,0.12), transparent 60%);
+      pointer-events: none;
+    }
+    .login-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px 36px;
+      width: 380px;
+      max-width: 92vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .login-brand {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .login-brand h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .login-brand p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .login-card .form-group {
+      margin-bottom: 16px;
+    }
+    .login-card .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .login-card .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .login-card .form-group input:focus {
+      border-color: var(--accent);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent-dim);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: var(--font);
+      margin-top: 8px;
+    }
+    .login-btn:hover {
+      background: var(--accent);
+    }
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .login-error {
+      text-align: center;
+      font-size: 12px;
+      color: var(--red);
+      min-height: 18px;
+      margin-top: 12px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .login-error.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-brand">
+      <h1>ADS Admin</h1>
+      <p>Landing Page Management System</p>
+    </div>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="user">Username</label>
+        <input type="text" id="user" placeholder="Enter username" autofocus autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="pass">Password</label>
+        <input type="password" id="pass" placeholder="Enter password" autocomplete="current-password">
+      </div>
+      <button type="submit" class="login-btn" id="login-btn">Sign In</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+<script>
+(function() {
+  var form = document.getElementById('login-form');
+  var btn = document.getElementById('login-btn');
+  var error = document.getElementById('login-error');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var user = document.getElementById('user').value.trim();
+    var pass = document.getElementById('pass').value.trim();
+
+    if (!user || !pass) {
+      error.textContent = 'Please enter username and password';
+      error.className = 'login-error show';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+    error.className = 'login-error';
+
+    fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: user, pass: pass })
+    })
+    .then(function(res) {
+      if (res.ok) return res.json();
+      return res.json().then(function(d) { throw new Error(d.error || 'Login failed'); });
+    })
+    .then(function() {
+      var hash = window.location.hash || '#dashboard';
+      window.location.href = '/adsadmin/' + (window.location.search || '');
+    })
+    .catch(function(err) {
+      error.textContent = err.message;
+      error.className = 'login-error show';
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    });
+  });
+})();
+</script>
+</body>
+</html>

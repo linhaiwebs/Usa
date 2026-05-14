@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const chokidar = require('chokidar');
 const apiRoutes = require('./routes/api');
 const injector = require('./middleware/injector');
@@ -12,10 +13,64 @@ const splitService = require('./services/split-service');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const TEMPLATES_DIR = path.join(__dirname, 'templates');
+const TOKEN_SECRET = process.env.TOKEN_SECRET || 'ads-secret-' + crypto.randomBytes(16).toString('hex');
+const ADMIN_USER = 'adsadmin';
+const ADMIN_PASS = 'Mm123567';
+const TOKEN_COOKIE = 'ads_token';
 
 app.use(express.json());
 
-// SSE clients for hot reload
+// --- Cookie helper ---
+function getCookie(req, name) {
+  const cookies = req.headers.cookie || '';
+  const match = cookies.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// --- Token helpers ---
+function createToken(user) {
+  const payload = { user, time: Date.now(), exp: Date.now() + 24 * 60 * 60 * 1000 };
+  const data = JSON.stringify(payload);
+  const hmac = crypto.createHmac('sha256', TOKEN_SECRET).update(data).digest('hex');
+  return Buffer.from(JSON.stringify({ d: data, h: hmac })).toString('base64url');
+}
+
+function verifyToken(token) {
+  try {
+    const { d, h } = JSON.parse(Buffer.from(token, 'base64url').toString());
+    const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(d).digest('hex');
+    if (h !== expected) return null;
+    const payload = JSON.parse(d);
+    if (payload.exp < Date.now()) return null;
+    return payload;
+  } catch (_) { return null; }
+}
+
+// --- Public routes (no auth) ---
+
+// Login page
+app.get('/adsadmin/login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'login.html'));
+});
+
+// Login API
+app.post('/api/login', (req, res) => {
+  const { user, pass } = req.body;
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    const token = createToken(user);
+    res.cookie(TOKEN_COOKIE, token, { httpOnly: true, sameSite: 'strict', maxAge: 24 * 60 * 60 * 1000 });
+    return res.json({ success: true });
+  }
+  res.status(401).json({ error: 'Invalid credentials' });
+});
+
+// Logout API
+app.post('/api/logout', (req, res) => {
+  res.clearCookie(TOKEN_COOKIE);
+  res.json({ success: true });
+});
+
+// SSE hot reload (public)
 const sseClients = [];
 function notifyClients(event, data) {
   sseClients.forEach(c => c.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
@@ -36,23 +91,33 @@ chokidar.watch(TEMPLATES_DIR, { ignoreInitial: true, depth: 2 }).on('change', (f
   notifyClients('reload', { file: rel });
 });
 
-// Basic auth middleware for admin panel
-function basicAuth(req, res, next) {
-  const auth = req.headers.authorization;
-  if (!auth) {
-    res.set('WWW-Authenticate', 'Basic realm="ADS Admin"');
-    return res.status(401).send('Authentication required');
-  }
-  const [user, pass] = Buffer.from(auth.split(' ')[1], 'base64').toString().split(':');
-  if (user === 'adsadmin' && pass === 'Mm123567') return next();
-  res.set('WWW-Authenticate', 'Basic realm="ADS Admin"');
-  res.status(401).send('Invalid credentials');
-}
+// --- Admin auth middleware ---
+app.use('/adsadmin', (req, res, next) => {
+  // Allow login page through
+  if (req.path === '/login.html') return next();
+  // Allow CSS/JS for login page styling
+  if (req.path === '/css/admin.css') return next();
+  // Check token
+  const token = getCookie(req, TOKEN_COOKIE);
+  if (token && verifyToken(token)) return next();
+  // Redirect to login
+  res.redirect('/adsadmin/login.html');
+});
 
-// Admin panel (protected)
-app.use('/adsadmin', basicAuth, express.static(path.join(__dirname, 'admin')));
+// Admin static files
+app.use('/adsadmin', express.static(path.join(__dirname, 'admin')));
 
-// Landing page — render active template with injections
+// --- API auth middleware ---
+app.use('/api', (req, res, next) => {
+  // Public endpoints
+  if (req.path === '/hotreload') return next();
+  if (req.path === '/login' || req.path === '/logout') return next();
+  const token = getCookie(req, TOKEN_COOKIE);
+  if (token && verifyToken(token)) return next();
+  res.status(401).json({ error: 'Unauthorized' });
+});
+
+// Landing page (public)
 app.get('/', (req, res) => {
   const active = templateService.getActiveTemplate();
   if (!active.exists) return res.status(404).send('No active template found. Set one up in <a href="/adsadmin">Admin Panel</a>.');
@@ -73,6 +138,6 @@ app.use('/api', apiRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Admin panel: http://localhost:${PORT}/adsadmin (user: adsadmin / pass: Mm123567)`);
+  console.log(`Admin: http://localhost:${PORT}/adsadmin (user: ${ADMIN_USER} / pass: ${ADMIN_PASS})`);
   console.log(`Landing page: http://localhost:${PORT}`);
 });
