@@ -1,9 +1,9 @@
 (function () {
   const pages = {
-    dashboard: { title: 'Dashboard', render: renderDashboard },
-    'split-routes': { title: 'Split Routes', render: renderSplitRoutes },
-    analytics: { title: 'Analytics', render: renderAnalytics },
-    templates: { title: 'Templates', render: renderTemplates }
+    dashboard: { title: '仪表盘', render: renderDashboard },
+    'split-routes': { title: '分流路由', render: renderSplitRoutes },
+    analytics: { title: '数据分析', render: renderAnalytics },
+    templates: { title: '模板管理', render: renderTemplates }
   };
 
   function navigate(page) {
@@ -40,17 +40,16 @@
   const evtSource = new EventSource('/api/hotreload');
   evtSource.addEventListener('reload', (e) => {
     const data = JSON.parse(e.data);
-    showToast(`Template file changed: ${data.file}`, 'success');
+    showToast(`模板文件已变更: ${data.file}`, 'success');
   });
   evtSource.onerror = () => {
-    document.getElementById('connection-status').textContent = '● Disconnected';
+    document.getElementById('connection-status').textContent = '● 已断开';
     document.getElementById('connection-status').classList.add('disconnected');
   };
 
   // Initial load
   handleHash();
 
-  // Periodically check which template is active on the templates page
   setInterval(async () => {
     if (window.location.hash === '#templates' || !window.location.hash || window.location.hash === '#dashboard') {
       // Lightweight - just checks connection

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ADS Admin — Login</title>
+  <title>ADS 管理后台 — 登录</title>
   <link rel="stylesheet" href="/adsadmin/css/admin.css">
   <style>
     body { display: block; margin: 0; padding: 0; }
@@ -117,19 +117,19 @@
 <div class="login-page">
   <div class="login-card">
     <div class="login-brand">
-      <h1>ADS Admin</h1>
-      <p>Landing Page Management System</p>
+      <h1>ADS 管理后台</h1>
+      <p>落地页管理系统</p>
     </div>
     <form id="login-form">
       <div class="form-group">
-        <label for="user">Username</label>
-        <input type="text" id="user" placeholder="Enter username" autofocus autocomplete="username">
+        <label for="user">用户名</label>
+        <input type="text" id="user" placeholder="请输入用户名" autofocus autocomplete="username">
       </div>
       <div class="form-group">
-        <label for="pass">Password</label>
-        <input type="password" id="pass" placeholder="Enter password" autocomplete="current-password">
+        <label for="pass">密码</label>
+        <input type="password" id="pass" placeholder="请输入密码" autocomplete="current-password">
       </div>
-      <button type="submit" class="login-btn" id="login-btn">Sign In</button>
+      <button type="submit" class="login-btn" id="login-btn">登 录</button>
       <div class="login-error" id="login-error"></div>
     </form>
   </div>
@@ -146,13 +146,13 @@
     var pass = document.getElementById('pass').value.trim();
 
     if (!user || !pass) {
-      error.textContent = 'Please enter username and password';
+      error.textContent = '请输入用户名和密码';
       error.className = 'login-error show';
       return;
     }
 
     btn.disabled = true;
-    btn.textContent = 'Signing in...';
+    btn.textContent = '登录中...';
     error.className = 'login-error';
 
     fetch('/api/login', {
@@ -162,17 +162,16 @@
     })
     .then(function(res) {
       if (res.ok) return res.json();
-      return res.json().then(function(d) { throw new Error(d.error || 'Login failed'); });
+      return res.json().then(function(d) { throw new Error(d.error || '登录失败'); });
     })
     .then(function() {
-      var hash = window.location.hash || '#dashboard';
-      window.location.href = '/adsadmin/' + (window.location.search || '');
+      window.location.href = '/adsadmin/';
     })
     .catch(function(err) {
-      error.textContent = err.message;
+      error.textContent = err.message === 'Invalid credentials' ? '用户名或密码错误' : err.message;
       error.className = 'login-error show';
       btn.disabled = false;
-      btn.textContent = 'Sign In';
+      btn.textContent = '登 录';
     });
   });
 })();
