@@ -1,13 +1,11 @@
 const analyticsService = require('../services/analytics-service');
-const popupService = require('../services/popup-service');
 
 function getGAScript(config) {
   if (!config.enabled || !config.gtmId) return '';
   const gtm = config.gtmId;
   let ads = '';
   if (config.adsConversionId) {
-    ads = `
-  gtag('config', '${config.adsConversionId}'${config.adsConversionLabel ? `, { 'conversion_label': '${config.adsConversionLabel}' }` : ''});`;
+    ads = `\n  gtag('config', '${config.adsConversionId}'${config.adsConversionLabel ? `, { 'conversion_label': '${config.adsConversionLabel}' }` : ''});`;
   }
   return `<!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm}');</script>
@@ -16,24 +14,30 @@ function getGAScript(config) {
 <!-- End Google Tag Manager -->`;
 }
 
-function getPopupScript(config) {
+function getPopupScript(config, splitUrl) {
   if (!config.enabled || !config.content) return '';
-  const popupData = JSON.stringify(config);
+
+  // Replace {{split_url}} placeholder with actual split route URL
+  const resolvedContent = (config.content || '').replace(/\{\{split_url\}\}/g, splitUrl || '#');
+
   const safeTitle = (config.title || '')
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'")
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '');
-  const safeContent = config.content
+  const safeContent = resolvedContent
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'")
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '');
+
   return `<script>
 (function(){
-  var cfg = ${popupData};
+  var cfg = ${JSON.stringify({ ...config, content: resolvedContent })};
   var shown = false;
   var isOpen = false;
+
+  function splitUrl() { return '${(splitUrl || '#').replace(/'/g, "\\'")}'; }
 
   function createPopup() {
     if (shown && cfg.showOnce) return;
@@ -52,7 +56,15 @@ function getPopupScript(config) {
     isOpen = true;
     document.body.style.overflow = 'hidden';
 
-    // Close handlers
+    // Wire up CTA links with split URL after DOM insert
+    var cta = overlay.querySelector('[data-cta="split"]');
+    if (cta) {
+      cta.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = splitUrl();
+      });
+    }
+
     overlay.querySelector('.lp-popup-close').addEventListener('click', closePopup);
     overlay.addEventListener('click', function(e) {
       if (e.target === overlay) closePopup();
@@ -72,17 +84,14 @@ function getPopupScript(config) {
     if (e.key === 'Escape') closePopup();
   }
 
-  // Global function for CTA buttons to trigger the popup
   window.showSitePopup = function() {
     if (isOpen) return;
     createPopup();
-    // Track click
     if (typeof gtag !== 'undefined') {
       gtag('event', 'cta_click', { event_category: 'popup', event_label: 'manual_trigger' });
     }
   };
 
-  // Auto-show based on config
   if (cfg.type === 'exit-intent') {
     document.addEventListener('mouseout', function(e) {
       if (e.clientY < 0 && !isOpen) createPopup();
@@ -96,12 +105,10 @@ function getPopupScript(config) {
 <\/script>`;
 }
 
-function inject(html) {
-  const analytics = analyticsService.get();
-  const popup = popupService.get();
+function inject(html, { analytics, popup, splitUrl } = {}) {
   return html
-    .replace('</head>', `${getGAScript(analytics)}</head>`)
-    .replace('</body>', `${getPopupScript(popup)}</body>`);
+    .replace('</head>', `${getGAScript(analytics || analyticsService.get())}</head>`)
+    .replace('</body>', `${getPopupScript(popup || {}, splitUrl || '')}</body>`);
 }
 
 module.exports = { inject, getGAScript, getPopupScript };

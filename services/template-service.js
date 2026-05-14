@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const storage = require('./storage');
 const simpleGit = require('simple-git');
 
@@ -28,8 +29,7 @@ function listTemplates() {
     .map(d => d.name);
   const settings = getSettings();
   return dirs.map(name => {
-    const tmpl = settings.templates.find(t => t.name === name) || { name, githubRepo: '', lastSync: null };
-    // Read version from config.json
+    const tmpl = settings.templates.find(t => t.name === name) || { name, githubRepo: '', lastSync: null, lastSyncHash: '' };
     let version = '';
     try {
       const configPath = path.join(TEMPLATES_DIR, name, 'config.json');
@@ -40,18 +40,6 @@ function listTemplates() {
     } catch (_) { /* ignore */ }
     return { ...tmpl, version };
   });
-}
-
-function updateTemplateSettings(name, data) {
-  const settings = getSettings();
-  let tmpl = settings.templates.find(t => t.name === name);
-  if (!tmpl) {
-    tmpl = { name, githubRepo: '', lastSync: null };
-    settings.templates.push(tmpl);
-  }
-  if (data.githubRepo !== undefined) tmpl.githubRepo = data.githubRepo;
-  storage.write(FILE, settings);
-  return tmpl;
 }
 
 function setActiveTemplate(name) {
@@ -86,24 +74,172 @@ function getTemplatePath(name) {
   return path.join(TEMPLATES_DIR, name);
 }
 
-async function syncFromGithub(templateName) {
+function updateTemplateSettings(name, data) {
   const settings = getSettings();
-  const tmpl = settings.templates.find(t => t.name === templateName);
-  if (!tmpl || !tmpl.githubRepo) throw new Error('No GitHub repo configured for this template');
-
-  const dir = path.join(TEMPLATES_DIR, templateName);
-  const git = simpleGit();
-
-  if (fs.existsSync(dir) && fs.existsSync(path.join(dir, '.git'))) {
-    await git.cwd(dir).pull('origin', 'main');
-  } else {
-    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
-    await git.clone(tmpl.githubRepo, dir);
+  let tmpl = settings.templates.find(t => t.name === name);
+  if (!tmpl) {
+    tmpl = { name, githubRepo: '', lastSync: null, lastSyncHash: '' };
+    settings.templates.push(tmpl);
   }
-
-  tmpl.lastSync = new Date().toISOString();
+  if (data.githubRepo !== undefined) tmpl.githubRepo = data.githubRepo;
   storage.write(FILE, settings);
-  return { success: true, lastSync: tmpl.lastSync };
+  return tmpl;
 }
 
-module.exports = { getSettings, getActiveTemplate, listTemplates, setActiveTemplate, getTemplateFiles, saveTemplateFile, getTemplatePath, syncFromGithub, updateTemplateSettings };
+function computeTemplateHash(name) {
+  const files = getTemplateFiles(name);
+  const hash = crypto.createHash('sha256');
+  const sorted = Object.keys(files).sort();
+  for (const f of sorted) {
+    hash.update(f + '\0' + (files[f] || '') + '\0');
+  }
+  return hash.digest('hex');
+}
+
+function isTemplateModified(name) {
+  const settings = getSettings();
+  const tmpl = settings.templates.find(t => t.name === name);
+  if (!tmpl || !tmpl.lastSyncHash) return false;
+  return computeTemplateHash(name) !== tmpl.lastSyncHash;
+}
+
+function readTemplateDirsFromPath(dirPath) {
+  if (!fs.existsSync(dirPath)) return [];
+  return fs.readdirSync(dirPath, { withFileTypes: true })
+    .filter(d => d.isDirectory() && !d.name.startsWith('.') && d.name !== 'node_modules')
+    .filter(d => {
+      // A template dir must have template.html or config.json
+      const hasIndex = fs.existsSync(path.join(dirPath, d.name, 'template.html'));
+      const hasConfig = fs.existsSync(path.join(dirPath, d.name, 'config.json'));
+      return hasIndex || hasConfig;
+    })
+    .map(d => d.name);
+}
+
+async function syncFromGithub(templateName, repoUrl) {
+  const settings = getSettings();
+  const actualRepo = repoUrl || (settings.githubRepo || '');
+  if (!actualRepo) throw new Error('No GitHub repo URL configured');
+
+  const git = simpleGit();
+  const tmpDir = path.join(TEMPLATES_DIR, '.sync-tmp');
+
+  // 1. Backup local templates that were modified
+  const existingDirs = readTemplateDirsFromPath(TEMPLATES_DIR);
+  const modifiedBackups = {};
+
+  for (const name of existingDirs) {
+    if (isTemplateModified(name)) {
+      const srcDir = path.join(TEMPLATES_DIR, name);
+      modifiedBackups[name] = backupDir(srcDir);
+    }
+  }
+
+  // 2. Clone or pull the repo into temp dir
+  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
+
+  try {
+    if (fs.existsSync(path.join(tmpDir, '.git'))) {
+      await git.cwd(tmpDir).pull('origin', 'main');
+    } else {
+      if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
+      await git.clone(actualRepo, tmpDir);
+    }
+  } catch (e) {
+    // If temp dir git fails, try fresh clone
+    if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
+    await git.clone(actualRepo, tmpDir);
+  }
+
+  // 3. Discover template dirs in the repo
+  const repoTemplates = readTemplateDirsFromPath(tmpDir);
+
+  if (repoTemplates.length === 0) {
+    // Clean up and throw
+    if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
+    throw new Error('No template directories found in repository');
+  }
+
+  // 4. Copy new template dirs from repo
+  const syncedNames = [];
+
+  for (const name of repoTemplates) {
+    const srcDir = path.join(tmpDir, name);
+    const destDir = path.join(TEMPLATES_DIR, name);
+
+    // If template was locally modified and backed up, skip overwriting
+    // (we'll restore the backup after)
+    if (modifiedBackups[name]) {
+      // Only copy files that don't exist locally (new files from repo)
+      copyNewFilesOnly(srcDir, destDir);
+    } else {
+      // Copy entire template dir from repo
+      copyDir(srcDir, destDir);
+    }
+    syncedNames.push(name);
+  }
+
+  // 5. Restore locally modified templates
+  for (const [name, backupPath] of Object.entries(modifiedBackups)) {
+    if (fs.existsSync(backupPath)) {
+      copyDir(backupPath, path.join(TEMPLATES_DIR, name));
+      fs.rmSync(backupPath, { recursive: true });
+    }
+  }
+
+  // 6. Update settings: add any new templates, update sync hashes
+  for (const name of syncedNames) {
+    let tmpl = settings.templates.find(t => t.name === name);
+    if (!tmpl) {
+      tmpl = { name, githubRepo: '', lastSync: null, lastSyncHash: '' };
+      settings.templates.push(tmpl);
+    }
+    tmpl.lastSync = new Date().toISOString();
+    tmpl.lastSyncHash = computeTemplateHash(name);
+  }
+  storage.write(FILE, settings);
+
+  // 7. Cleanup temp
+  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
+
+  return { success: true, synced: syncedNames, templates: listTemplates() };
+}
+
+function copyDir(src, dest) {
+  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDir(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+function copyNewFilesOnly(src, dest) {
+  if (!fs.existsSync(dest)) {
+    copyDir(src, dest);
+    return;
+  }
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyNewFilesOnly(srcPath, destPath);
+    } else if (!fs.existsSync(destPath)) {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+function backupDir(srcDir) {
+  const tmpBackup = path.join(TEMPLATES_DIR, '.backup-' + Date.now() + '-' + path.basename(srcDir));
+  copyDir(srcDir, tmpBackup);
+  return tmpBackup;
+}
+
+module.exports = { getSettings, getActiveTemplate, listTemplates, setActiveTemplate, getTemplateFiles, saveTemplateFile, getTemplatePath, syncFromGithub, updateTemplateSettings, computeTemplateHash };

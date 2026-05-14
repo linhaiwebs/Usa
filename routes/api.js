@@ -60,16 +60,21 @@ router.put('/templates/:name/settings', (req, res) => {
 });
 router.post('/templates/:name/sync', async (req, res) => {
   try {
-    const result = await templateService.syncFromGithub(req.params.name);
+    const repoUrl = req.body.repoUrl || '';
+    const result = await templateService.syncFromGithub(req.params.name, repoUrl);
     res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// === Popups ===
-router.get('/popups', (req, res) => res.json(popupService.get()));
-router.put('/popups', (req, res) => res.json(popupService.update(req.body)));
+// === Popups (per-template) ===
+router.get('/templates/:name/popup', (req, res) => {
+  res.json(popupService.get(req.params.name));
+});
+router.put('/templates/:name/popup', (req, res) => {
+  res.json(popupService.update(req.params.name, req.body));
+});
 
 // === Stats ===
 router.get('/stats', (req, res) => {

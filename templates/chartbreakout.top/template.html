@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   
+   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Stop Buying U.S. Stocks Blind — Get the Market Map First (Free)</title>
+  <meta name="description" content="If you keep buying U.S. stocks blind and then watching them stall, this free WhatsApp brief gives you a simple U.S. market map – indices, sectors and styles – before your next trade. Educational only, no tips, no promises."/>
+  <meta name="robots" content="index,follow"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#020617;
+      --ink:#f9fafb;
+      --muted:#9ca3af;
+      --panel:#020617;
+      --panel-soft:#050816;
+      --line:rgba(148,163,184,.45);
+      --accent:#22c55e;
+      --accent2:#38bdf8;
+      --danger:#fb7185;
+      --radius:18px;
+      --shadow:0 26px 80px rgba(3,7,18,.9);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{
+      font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:#020617;
+      color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    body{
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+    }
+
+    /* ==== 背景动画 ==== */
+    .bg{
+      position:fixed;
+      inset:0;
+      z-index:-3;
+      background:
+        radial-gradient(1000px 620px at 0% 0%,rgba(34,197,94,.24),transparent 65%),
+        radial-gradient(1000px 620px at 100% 100%,rgba(56,189,248,.28),transparent 65%),
+        radial-gradient(circle at 50% 120%,#020617 0,#000 70%);
+    }
+    .bg-grid{
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      background-image:
+        linear-gradient(90deg,rgba(148,163,184,.13) 1px,transparent 1px),
+        linear-gradient(0deg,rgba(148,163,184,.12) 1px,transparent 1px);
+      background-size:28px 28px;
+      mix-blend-mode:soft-light;
+      opacity:.24;
+      animation:bgShift 22s linear infinite;
+      pointer-events:none;
+    }
+    .bg-orbs{
+      position:fixed;
+      inset:-20%;
+      z-index:-1;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .bg-orb{
+      position:absolute;
+      width:220px;
+      height:220px;
+      border-radius:999px;
+      background:radial-gradient(circle,rgba(56,189,248,.9),transparent 65%);
+      filter:blur(2px);
+      opacity:.16;
+      animation:orbFloat 18s ease-in-out infinite;
+    }
+    .bg-orb:nth-child(1){top:8%;left:10%;animation-delay:0s;}
+    .bg-orb:nth-child(2){bottom:4%;right:12%;animation-delay:-4s;}
+    .bg-orb:nth-child(3){top:40%;right:2%;animation-delay:-8s;}
+
+    @keyframes bgShift{
+      from{transform:translate3d(0,0,0);}
+      to{transform:translate3d(-28px,-28px,0);}
+    }
+    @keyframes orbFloat{
+      0%{transform:translate3d(0,0,0) scale(1);}
+      50%{transform:translate3d(40px,-30px,0) scale(1.1);}
+      100%{transform:translate3d(0,0,0) scale(1);}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .bg-grid,.bg-orb{animation:none;}
+    }
+
+    /* Hero 区 */
+    header{
+      padding:3.3rem 1.4rem 1.7rem;
+      background:
+        radial-gradient(920px 420px at 0% 0%,rgba(15,23,42,.96),transparent 60%),
+        radial-gradient(920px 420px at 100% 0%,rgba(15,23,42,.96),transparent 60%),
+        linear-gradient(120deg,#020617 0,#020617 60%,#020617 100%);
+      border-bottom:1px solid rgba(148,163,184,.4);
+      box-shadow:0 18px 60px rgba(3,7,18,1);
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+      z-index:1;
+    }
+    header::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:
+        conic-gradient(from 180deg at 50% -10%,rgba(34,197,94,0),rgba(34,197,94,.55),rgba(59,130,246,0));
+      opacity:.7;
+      mix-blend-mode:screen;
+      filter:blur(2px);
+      animation:heroSweep 14s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes heroSweep{
+      from{transform:rotate(0deg);}
+      to{transform:rotate(360deg);}
+    }
+
+    .hero-inner{
+      max-width:1040px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
+      gap:1.8rem;
+      align-items:flex-start;
+      position:relative;
+      z-index:1;
+    }
+    @media(max-width:880px){
+      .hero-inner{
+        grid-template-columns:minmax(0,1fr);
+      }
+    }
+
+    .hero-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      padding:.25rem .7rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.5);
+      background:rgba(15,23,42,.92);
+      font-size:.75rem;
+      color:#e5e7eb;
+      margin-bottom:.85rem;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-tag span{
+      width:7px;height:7px;border-radius:999px;
+      background:radial-gradient(circle,#22c55e,#16a34a);
+      box-shadow:0 0 8px rgba(34,197,94,1);
+    }
+    .hero-tag::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(120deg,transparent,rgba(248,250,252,.45),transparent);
+      transform:translateX(-120%);
+      animation:tagFlash 3s ease-in-out infinite;
+    }
+    @keyframes tagFlash{
+      0%{transform:translateX(-120%);}
+      55%{transform:translateX(120%);}
+      100%{transform:translate(120%);}
+    }
+
+    h1{
+      font-size:2.25rem;
+      line-height:1.08;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:#fef9c3;
+      text-shadow:
+        0 0 10px rgba(234,179,8,1),
+        0 0 30px rgba(56,189,248,.9);
+      margin-bottom:.5rem;
+    }
+
+    .hero-sub{
+      font-size:.96rem;
+      max-width:640px;
+      color:#e5e7eb;
+    }
+    .hero-sub strong{color:#facc15;}
+
+    .hero-bullets{
+      list-style:none;
+      margin-top:.9rem;
+      font-size:.86rem;
+      color:var(--muted);
+    }
+    .hero-bullets li{
+      display:flex;
+      align-items:flex-start;
+      gap:.45rem;
+      margin-bottom:.3rem;
+    }
+    .hero-bullets li span{
+      margin-top:.18rem;
+      font-size:.7rem;
+      color:#f97316;
+    }
+
+    .hero-cta-group{
+      margin-top:1.1rem;
+      display:flex;
+      flex-wrap:wrap;
+      gap:.7rem;
+      align-items:center;
+    }
+
+    /* CTA 外环 + 脉冲 */
+    .cta-shell{
+      position:relative;
+      display:inline-flex;
+      transform:translate3d(0,0,0);
+      transition:transform .18s ease-out;
+    }
+    .cta-shell::before{
+      content:"";
+      position:absolute;
+      inset:-14px;
+      border-radius:999px;
+      background:conic-gradient(from 0deg,rgba(250,204,21,0),rgba(250,204,21,.9),rgba(56,189,248,0));
+      opacity:.9;
+      filter:blur(14px);
+      z-index:-1;
+      animation:ctaHalo 11s linear infinite;
+    }
+    @keyframes ctaHalo{
+      from{transform:rotate(0deg);}
+      to{transform:rotate(360deg);}
+    }
+
+    .btn-primary{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:.9rem 2.2rem;
+      border-radius:999px;
+      background-image:linear-gradient(135deg,#facc15,#22c55e);
+      color:#020617;
+      font-weight:800;
+      font-size:.95rem;
+      text-decoration:none;
+      box-shadow:0 22px 60px rgba(3,7,18,1),0 0 55px rgba(250,204,21,1);
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      white-space:nowrap;
+      position:relative;
+      overflow:hidden;
+    }
+    .btn-primary::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 0 0,rgba(255,255,255,.45),transparent 60%);
+      opacity:0;
+      transition:opacity .25s ease;
+    }
+    .btn-primary--pulse{
+      animation:btnPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes btnPulse{
+      0%{
+        transform:translateY(0) scale(1);
+        box-shadow:0 22px 60px rgba(3,7,18,1),0 0 45px rgba(250,204,21,.9);
+      }
+      50%{
+        transform:translateY(-1px) scale(1.03);
+        box-shadow:0 28px 80px rgba(3,7,18,1),0 0 80px rgba(250,204,21,1);
+      }
+      100%{
+        transform:translateY(0) scale(1);
+        box-shadow:0 22px 60px rgba(3,7,18,1),0 0 45px rgba(250,204,21,.9);
+      }
+    }
+    .btn-primary:hover{
+      filter:brightness(1.05);
+    }
+    .btn-primary:hover::after{
+      opacity:.9;
+    }
+
+    .cta-note{
+      font-size:.8rem;
+      color:var(--muted);
+    }
+
+    .hero-warning{
+      margin-top:1rem;
+      font-size:.82rem;
+      color:#fecaca;
+      display:flex;
+      gap:.4rem;
+      align-items:flex-start;
+    }
+    .hero-warning span{
+      margin-top:.1rem;
+      font-size:.78rem;
+    }
+
+    /* 右侧卡片 */
+    .hero-right{
+      background:
+        radial-gradient(circle at top,rgba(15,23,42,.98),transparent 65%),
+        radial-gradient(circle at bottom,rgba(15,23,42,.95),transparent 65%),
+        #020617;
+      border-radius:22px;
+      padding:1.25rem 1.15rem 1.45rem;
+      border:1px solid rgba(148,163,184,.7);
+      box-shadow:var(--shadow);
+      transform:translateY(0);
+      animation:floatCard 7s ease-in-out infinite alternate;
+    }
+    @keyframes floatCard{
+      from{transform:translateY(0);}
+      to{transform:translateY(-8px);}
+    }
+    .hero-right h2{
+      font-size:.95rem;
+      text-transform:uppercase;
+      letter-spacing:.15em;
+      color:#bfdbfe;
+      margin-bottom:.7rem;
+    }
+    .hero-right ul{
+      list-style:none;
+      font-size:.82rem;
+      color:#e5e7eb;
+    }
+    .hero-right li{
+      display:flex;
+      gap:.45rem;
+      margin-bottom:.35rem;
+    }
+    .hero-right li b{
+      color:#fecaca;
+      font-weight:700;
+    }
+    .hero-right-footer{
+      margin-top:.7rem;
+      padding-top:.7rem;
+      border-top:1px dashed rgba(148,163,184,.6);
+      font-size:.78rem;
+      color:var(--muted);
+    }
+
+    /* 内容区 */
+    .wrap{
+      max-width:1040px;
+      margin:2.4rem auto 3.1rem;
+      padding:0 1.4rem 2.5rem;
+      position:relative;
+      z-index:0;
+    }
+
+    .section-title{
+      font-size:1.25rem;
+      margin-bottom:1rem;
+      text-transform:uppercase;
+      letter-spacing:.13em;
+      display:inline-flex;
+      align-items:center;
+      gap:.6rem;
+      color:#e5e7eb;
+    }
+    .section-title::before{
+      content:"";
+      width:3px;
+      height:1.4em;
+      border-radius:999px;
+      background:linear-gradient(180deg,#facc15,#22c55e);
+      box-shadow:0 0 18px rgba(250,204,21,1);
+    }
+
+    .card{
+      background:
+        radial-gradient(circle at top left,rgba(234,179,8,.22),transparent 60%),
+        radial-gradient(circle at bottom right,rgba(56,189,248,.26),transparent 60%),
+        var(--panel-soft);
+      border-radius:var(--radius);
+      border:1px solid rgba(148,163,184,.5);
+      padding:1.25rem 1.15rem 1.3rem;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(20px);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card-grid{
+      display:grid;
+      gap:1rem;
+    }
+    @media(min-width:820px){
+      .card-grid--3{grid-template-columns:repeat(3,minmax(0,1fr));}
+      .card-grid--2{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+
+    .tiny{font-size:.86rem;color:#e5e7eb;}
+    .muted{font-size:.82rem;color:var(--muted);}
+
+    .card h3{
+      font-size:.98rem;
+      margin-bottom:.25rem;
+    }
+    .danger-text{color:#fecaca;}
+    .ok-text{color:#bbf7d0;}
+
+    .chip{
+      display:inline-block;
+      padding:.2rem .6rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.55);
+      background:rgba(15,23,42,.9);
+      font-size:.74rem;
+      color:#e5e7eb;
+      margin:.18rem .35rem .05rem 0;
+    }
+
+    /* 人物板块 */
+    .mentor{
+      margin-top:2.5rem;
+    }
+    .mentor-inner{
+      display:flex;
+      flex-direction:column;
+      gap:1.45rem;
+      padding:1.5rem 1.5rem 1.6rem;
+      border-radius:24px;
+      border:1px solid rgba(75,85,99,.9);
+      background:
+        radial-gradient(circle at top left,rgba(56,189,248,.5),transparent 70%),
+        radial-gradient(circle at bottom right,rgba(15,23,42,1),transparent 70%),
+        #020617;
+      box-shadow:0 30px 90px rgba(3,7,18,1);
+      position:relative;
+      overflow:hidden;
+    }
+    .mentor-inner::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:conic-gradient(from 130deg at 10% 0%,rgba(56,189,248,0),rgba(56,189,248,.7),rgba(234,179,8,0));
+      opacity:.4;
+      mix-blend-mode:screen;
+      pointer-events:none;
+    }
+    .mentor-media{
+      position:relative;
+      z-index:1;
+      flex:0 0 240px;
+      max-width:260px;
+    }
+    .mentor-img-frame{
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(191,219,254,.95);
+      background:#020617;
+      box-shadow:0 26px 70px rgba(3,7,18,1);
+    }
+    .mentor-img-frame img{
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transform:scale(1.03);
+      transition:transform .3s ease;
+    }
+    .mentor-inner:hover .mentor-img-frame img{
+      transform:scale(1.06);
+    }
+    .mentor-caption{
+      margin-top:.45rem;
+      font-size:.8rem;
+      color:#e5e7eb;
+    }
+
+    .mentor-copy{
+      position:relative;
+      z-index:1;
+    }
+    .mentor-title{
+      font-size:1.02rem;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      color:#bfdbfe;
+      margin-bottom:.4rem;
+    }
+    .mentor-copy ul{
+      padding-left:1.15rem;
+      margin:.45rem 0 .6rem;
+      font-size:.86rem;
+    }
+    .badge-row{
+      margin-top:.5rem;
+    }
+    .badge-row .chip{
+      border-color:rgba(129,140,248,.9);
+      background:rgba(15,23,42,.88);
+    }
+    .mentor-disclaimer{
+      font-size:.75rem;
+      color:var(--muted);
+      margin-top:.6rem;
+    }
+
+    @media(min-width:820px){
+      .mentor-inner{
+        flex-direction:row;
+        align-items:flex-start;
+      }
+    }
+    @media(max-width:819px){
+      .mentor-media{max-width:none;}
+    }
+
+    /* 互动区 */
+    .interactive-card{
+      margin-top:2.4rem;
+    }
+    .scenario-buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.5rem;
+      margin-bottom:.8rem;
+    }
+    .scenario-btn{
+      flex:1 1 160px;
+      min-width:0;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.6);
+      background:rgba(15,23,42,.94);
+      padding:.45rem .8rem;
+      font-size:.8rem;
+      color:#e5e7eb;
+      text-align:left;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+      transition:border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .scenario-btn span{
+      font-size:.9rem;
+      color:#facc15;
+    }
+    .scenario-btn.active{
+      border-color:#facc15;
+      background:radial-gradient(circle at top left,rgba(250,204,21,.4),rgba(15,23,42,.96));
+      box-shadow:0 14px 40px rgba(250,204,21,.5);
+      transform:translateY(-1px);
+    }
+    .scenario-output{
+      border-radius:14px;
+      border:1px dashed rgba(148,163,184,.6);
+      background:rgba(15,23,42,.9);
+      padding:.8rem .9rem;
+      font-size:.83rem;
+      color:#e5e7eb;
+    }
+    .scenario-output strong{color:#fee2e2;}
+
+    /* 谁适合 / 谁不适合 */
+    .list-compact{
+      list-style:none;
+      font-size:.84rem;
+    }
+    .list-compact li{
+      margin-bottom:.25rem;
+      padding-left:.9rem;
+      position:relative;
+    }
+    .list-compact li::before{
+      content:"–";
+      position:absolute;
+      left:0;
+      color:#fecaca;
+    }
+
+    /* 最终 CTA */
+    .final-cta{
+      margin-top:2.5rem;
+    }
+    .final-cta-inner{
+      text-align:center;
+    }
+    .final-cta-inner h2{
+      font-size:1.25rem;
+      margin-bottom:.4rem;
+    }
+    .final-cta-inner p{
+      font-size:.89rem;
+      color:#e5e7eb;
+      max-width:620px;
+      margin:0 auto .8rem;
+    }
+    .final-cta-inner .btn-primary{
+      margin-top:.8rem;
+      padding:1rem 2.6rem;
+    }
+    .final-line{
+      font-size:.78rem;
+      color:var(--muted);
+      margin-top:.55rem;
+    }
+
+    /* FAQ 折叠 */
+    .faq{
+      margin-top:2.4rem;
+    }
+    .faq-item{
+      border-radius:var(--radius);
+      border:1px solid rgba(148,163,184,.5);
+      background:rgba(3,7,18,.96);
+      margin-bottom:.7rem;
+      overflow:hidden;
+    }
+    .faq-header{
+      padding:.85rem 1rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
+      font-size:.86rem;
+    }
+    .faq-header span{
+      font-size:1.25rem;
+      color:var(--muted);
+    }
+    .faq-body{
+      max-height:0;
+      overflow:hidden;
+      padding:0 1rem;
+      transition:max-height .25s ease;
+    }
+    .faq-body p{
+      font-size:.8rem;
+      color:var(--muted);
+      margin:.4rem 0 .85rem;
+    }
+    .faq-item.open .faq-body{
+      max-height:220px;
+    }
+
+    footer{
+      border-top:1px solid rgba(75,85,99,.9);
+      padding:1.8rem 1.4rem 2.2rem;
+      text-align:center;
+      font-size:.78rem;
+      color:var(--muted);
+      background:#020617;
+    }
+    footer strong{color:#e5e7eb;}
+    footer a{
+      color:#7dd3fc;
+      text-decoration:none;
+      font-weight:500;
+    }
+    footer a:hover{
+      color:#bae6fd;
+      text-decoration:underline;
+    }
+
+    /* Modal 样式 */
+    dialog.modal{
+      width:min(920px,92vw);
+      border:none;
+      padding:0;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 26px 90px rgba(15,23,42,.95);
+      background:#ffffff;
+      color:#0f172a;
+    }
+    dialog::backdrop{
+      background:rgba(15,23,42,.75);
+      backdrop-filter:blur(4px);
+    }
+    .modal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:1rem 1.25rem;
+      border-bottom:1px solid #e5e7eb;
+      background:#f8fafc;
+    }
+    .modal-title{
+      font-weight:800;
+      font-size:.98rem;
+    }
+    .modal-body{
+      padding:1.25rem 1.4rem 1.6rem;
+      max-height:min(76vh,860px);
+      overflow:auto;
+      font-size:.9rem;
+      line-height:1.7;
+      color:#111827;
+    }
+    .modal-body h1{
+      font-size:1.5rem;
+      margin:.2rem 0 1rem;
+    }
+    .modal-body h2{
+      font-size:1.02rem;
+      margin:1.2rem 0 .6rem;
+    }
+    .modal-body h3{
+      font-size:.96rem;
+      margin:1rem 0 .4rem;
+    }
+    .modal-body p + p{
+      margin-top:.3rem;
+    }
+    .modal-body ul{
+      margin:.2rem 0 .4rem;
+      padding-left:1.2rem;
+    }
+    .modal-body li{
+      margin:.18rem 0;
+    }
+    .modal-close{
+      appearance:none;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
+      padding:.42rem .8rem;
+      font-size:.8rem;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .modal-close:hover{
+      background:#f3f4f6;
+    }
+    .modal-muted{
+      color:#6b7280;
+      font-size:.82rem;
+    }
+    .highlight{
+      color:#b91c1c;
+      font-weight:600;
+    }
+
+    /* 滚动进入动画 */
+    .js-reveal{
+      opacity:0;
+      transform:translateY(24px);
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    .js-reveal.revealed{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    /* 移动端优化 */
+    @media(max-width:768px){
+      header{
+        padding:2.4rem 1.1rem 1.2rem;
+      }
+      .hero-inner{
+        gap:1.4rem;
+      }
+      h1{
+        font-size:1.7rem;
+        line-height:1.15;
+      }
+      .hero-sub{
+        font-size:.9rem;
+      }
+      .hero-bullets{
+        font-size:.8rem;
+      }
+      .hero-cta-group{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .cta-shell,
+      .btn-primary{
+        width:100%;
+      }
+      .btn-primary{
+        font-size:.88rem;
+        padding:.9rem 1.2rem;
+        white-space:normal;
+        text-align:center;
+      }
+      .hero-right{
+        margin-top:.6rem;
+        animation:none;
+      }
+      .wrap{
+        padding:0 1.1rem 2.4rem;
+      }
+      .card{
+        padding:1.1rem 1rem 1.1rem;
+      }
+      .mentor-inner{
+        padding:1.25rem 1.1rem 1.35rem;
+      }
+      .mentor-title{
+        font-size:.95rem;
+        letter-spacing:.08em;
+      }
+      .final-cta-inner h2{
+        font-size:1.05rem;
+      }
+      .section-title{
+        font-size:1.05rem;
+        letter-spacing:.09em;
+      }
+      .scenario-buttons{
+        flex-direction:column;
+      }
+    }
+
+    @media(max-width:480px){
+      header{
+        padding-top:2.2rem;
+      }
+      h1{
+        font-size:1.5rem;
+      }
+      .hero-sub{
+        font-size:.86rem;
+      }
+      .hero-bullets{
+        font-size:.78rem;
+      }
+      .tiny{font-size:.82rem;}
+      .muted{font-size:.78rem;}
+      .chip{font-size:.72rem;}
+      .btn-primary{
+        font-size:.82rem;
+        padding:.8rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-orbs" aria-hidden="true">
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+</div>
+
+<header>
+  <div class="hero-inner js-reveal">
+    <div>
+      <div class="hero-tag">
+        <span></span>
+        <div>U.S. STOCK CONTEXT · FREE WHATSApp BRIEF</div>
+      </div>
+      <h1>Stop Buying U.S. Stocks Blind</h1>
+      <p class="hero-sub">
+        You buy a U.S. stock, it runs for one day… and then dies on you.  
+        Not because you’re “unlucky”, but because you entered with <strong>zero clear picture</strong> of what the U.S. market was actually doing.
+        This free WhatsApp brief fixes one thing: it gives you a <strong>simple U.S. market map</strong> before you click buy.
+      </p>
+
+      <ul class="hero-bullets">
+        <li><span>•</span><div>You see <strong>who really carried the move</strong> — indices, sectors, styles — instead of just one screaming headline.</div></li>
+        <li><span>•</span><div>You stop chasing the last green candle and start recognising when a move is already old and tired.</div></li>
+        <li><span>•</span><div>You get all of this in <strong>one short, phone-friendly brief</strong>, built only from public data — no tips, no sure things.</div></li>
+      </ul>
+
+      <div class="hero-cta-group">
+        <div class="cta-shell js-cta-shell">
+          <!-- 换成你的真实 WhatsApp 链接 -->
+          <a class="btn-primary btn-primary--pulse" href="#" onclick="showSitePopup(); return false;" target="_blank" rel="noopener">
+            📲 Before My Next Trade, Send Me the U.S. Market Map
+          </a>
+        </div>
+        <div class="cta-note">
+          Free brief · Educational only · You can mute or leave anytime in WhatsApp.
+        </div>
+      </div>
+
+      <div class="hero-warning">
+        <span>⚠️</span>
+        <div>
+          If you’re tired of being the one <strong>buying after the move</strong>, this is for you.  
+          Not to tell you what to buy — but to stop you trading with zero context.
+        </div>
+      </div>
+    </div>
+
+    <aside class="hero-right">
+      <h2>Be honest — where do you lose money?</h2>
+      <ul>
+        <li><b>•</b> You enter after a “big day” and realise the real move started <strong>days or weeks before</strong>.</li>
+        <li><b>•</b> You hold dead names while money quietly rotates somewhere else in the U.S. market.</li>
+        <li><b>•</b> You flip between apps and screenshots but can’t answer a basic question:  
+          <strong>“What actually changed in the U.S. market this week?”</strong></li>
+      </ul>
+      <div class="hero-right-footer">
+        The brief doesn’t sell you magic picks.  
+        It simply puts the U.S. market on one screen so you stop trading as if everything is random.
+      </div>
+    </aside>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- 痛点 -->
+  <section class="js-reveal">
+    <h2 class="section-title">Why you keep becoming exit liquidity</h2>
+    <div class="card card-grid card-grid--3">
+      <div>
+        <h3 class="danger-text">1. You only see the last 5% of the move</h3>
+        <p class="tiny">
+          By the time a stock hits your feed, the important part already happened in the
+          <strong>indices and sectors</strong>. You’re trading the echo, not the move.
+        </p>
+        <span class="chip">Headline Chaser</span><span class="chip">Late Entries</span>
+      </div>
+      <div>
+        <h3 class="danger-text">2. You don’t know where money is rotating</h3>
+        <p class="tiny">
+          Growth/value, defensives/cyclicals — you feel the pain but never see
+          <strong>where capital quietly left and where it landed</strong>.
+        </p>
+        <span class="chip">No Rotation Map</span><span class="chip">Hold the Wrong Stuff</span>
+      </div>
+      <div>
+        <h3 class="danger-text">3. You decide first, check structure later</h3>
+        <p class="tiny">
+          You enter because “it looks good” on your phone, then only after the loss do you ask:
+          <strong>What was the U.S. market actually doing?</strong>
+        </p>
+        <span class="chip">Emotion Trades</span><span class="chip">Zero Pre-Trade Context</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 互动区 -->
+  <section class="interactive-card js-reveal">
+    <h2 class="section-title">Tap your real situation — don’t lie to yourself</h2>
+    <div class="card">
+      <p class="tiny" style="margin-bottom:.7rem;">
+        Click the one that feels most like you.  
+        The explanation below updates to show exactly why a simple U.S. market map changes your next trade.
+      </p>
+
+      <div class="scenario-buttons" id="scenarioButtons">
+        <button type="button" class="scenario-btn" data-scenario="chase">
+          <span>●</span>
+          I jump in after a huge green day — then get stuck
+        </button>
+        <button type="button" class="scenario-btn" data-scenario="late">
+          <span>●</span>
+          I always hear about the move when it’s already over
+        </button>
+        <button type="button" class="scenario-btn" data-scenario="lost">
+          <span>●</span>
+          I can’t see where U.S. money is rotating at all
+        </button>
+      </div>
+
+      <div class="scenario-output" id="scenarioOutput">
+        <strong>Reality check:</strong> you’re risking real money in a market whose structure you can’t see.  
+        The U.S. Market Map doesn’t give you tips — it puts the core data in one view so your next decision isn’t blind.
+      </div>
+    </div>
+  </section>
+
+  <!-- 你会拿到什么 -->
+  <section style="margin-top:2.4rem;" class="js-reveal">
+    <h2 class="section-title">What you actually get in WhatsApp (no fluff)</h2>
+    <div class="card">
+      <h3>A short U.S. market brief you can read before placing risk</h3>
+      <p class="tiny" style="margin-top:.35rem;">
+        One brief, built from <strong>public U.S. market data only</strong>, answering three blunt questions for the latest period:
+      </p>
+      <ul class="tiny" style="padding-left:1.1rem;margin:.55rem 0 .45rem;">
+        <li><strong>What did the main U.S. indices really do?</strong>
+          Not just “green” or “red”, but the actual move.</li>
+        <li><strong>Who carried it?</strong> Which sectors and styles pulled the weight and which ones quietly bled.</li>
+        <li><strong>Was it broad or just a few names?</strong> You see if you’re trading the market or just a handful of giants.</li>
+      </ul>
+      <p class="tiny muted" style="margin-top:.35rem;">
+        It takes about <strong>5–7 minutes</strong> to read on your phone.  
+        Then you decide what to do — we don’t tell you what to buy, we don’t promise results.
+      </p>
+      <div style="text-align:center;margin-top:1rem;">
+        <a class="btn-primary" href="#" onclick="showSitePopup(); return false;" target="_blank" rel="noopener">
+          Send Me the U.S. Market Brief Before My Next Trade
+        </a>
+        <p class="muted" style="margin-top:.5rem;">
+          Free · Educational only · Public data · No stock tips, no guaranteed returns.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 人物板块：Savita Subramanian -->
+  <section class="mentor js-reveal">
+    <div class="mentor-inner">
+      <div class="mentor-media">
+        <div class="mentor-img-frame">
+          <!-- 换成你自己的图片路径 -->
+          <img src="https://chartbreakout.top/j.png" alt="Institutional style inspired by Savita Subramanian" loading="lazy">
+        </div>
+        <p class="mentor-caption">
+          Inspired by her blunt, data-driven way of looking at U.S. equities —  
+          not “hot picks”, but where money is really positioned across sectors and styles.
+        </p>
+      </div>
+
+      <div class="mentor-copy">
+        <div class="mentor-title">What you can copy from Savita Subramanian’s way of reading the U.S. market</div>
+        <p class="tiny">
+          In public notes and interviews, she doesn’t obsess over one ticker. She asks:
+          <strong>“Where is capital actually sitting and where is it leaving?”</strong>
+        </p>
+        <ul>
+          <li><strong>1. Start with positioning, not stories</strong> — understand which sectors/styles are crowded or abandoned.</li>
+          <li><strong>2. Tie moves back to the big picture</strong> — macro, earnings, flows, not just a random candle.</li>
+          <li><strong>3. Only then talk about opportunities</strong> — once the field is mapped, single stocks make more sense.</li>
+        </ul>
+        <p class="tiny">
+          The U.S. Market Map copies that habit at a simpler level:  
+          <strong>show you the field first, let you decide how to play</strong>.  
+          It will never say “buy this now” — it shows the context you keep missing.
+        </p>
+        <div class="badge-row">
+          <span class="chip">Positioning First</span>
+          <span class="chip">Sector & Style Focus</span>
+          <span class="chip">Context Before Trades</span>
+        </div>
+        <p class="mentor-disclaimer">
+          Mention for educational context only. Savita Subramanian is not involved in and does not endorse this brief.
+          We simply echo structure-first habits illustrated in her public work.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 谁适合 / 谁不适合 -->
+  <section style="margin-top:2.4rem;" class="js-reveal">
+    <div class="card card-grid card-grid--2">
+      <div>
+        <h3 class="ok-text">This brief is built for you if…</h3>
+        <p class="tiny" style="margin-top:.3rem;">
+          You already trade or hold U.S. stocks and you’re tired of feeling like the last one into every move.
+        </p>
+        <ul class="list-compact" style="margin-top:.45rem;">
+          <li>You want a <strong>clear, fast picture</strong> of the U.S. market before risking fresh capital.</li>
+          <li>You prefer simple charts and plain English over hype and “secret sauce”.</li>
+          <li>You’re willing to think for yourself once you see solid data.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="danger-text">Please don’t join if you…</h3>
+        <ul class="list-compact" style="margin-top:.3rem;">
+          <li>Expect guaranteed profits, “inside info” or signals telling you exactly what to buy/sell.</li>
+          <li>Want someone else to take responsibility for your trades.</li>
+          <li>Refuse to read even a short brief before placing money at risk.</li>
+        </ul>
+        <p class="muted" style="margin-top:.5rem;">
+          This is <strong>market education and context</strong>.  
+          It is not investment advice, not a tip service, not a get-rich-quick program.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 最终 CTA -->
+  <section class="final-cta js-reveal">
+    <div class="card final-cta-inner">
+      <h2>If you’re going to trade U.S. stocks, at least see the map first</h2>
+      <p>
+        You can keep guessing from random screenshots, or you can take 5–7 minutes to read a simple brief that shows
+        where the U.S. market actually moved — indices, sectors, styles — using public data only.
+      </p>
+      <p>
+        Then you decide if your next trade still makes sense.
+      </p>
+      <a class="btn-primary" href="#" onclick="showSitePopup(); return false;" target="_blank" rel="noopener">
+        📲 Yes — Show Me the U.S. Market Map in WhatsApp
+      </a>
+      <div class="final-line">
+        Free · Educational only · No recommendations, no guarantees · You can leave any time.
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq js-reveal">
+    <h2 class="section-title">Quick questions before you tap WhatsApp</h2>
+
+    <div class="faq-item">
+      <div class="faq-header">
+        <div>Is this investment or trading advice?</div>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-body">
+        <p>
+          No. The brief is for <strong>informational and educational purposes only</strong>.
+          It does not consider your personal situation and does not give personalised recommendations or model portfolios.
+        </p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-header">
+        <div>Is it really free?</div>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-body">
+        <p>
+          Yes. There is <strong>no fee</strong> for receiving the brief.  
+          Your mobile provider may charge normal data/usage fees for using WhatsApp or similar apps.
+        </p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-header">
+        <div>Where does the information come from?</div>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-body">
+        <p>
+          From <strong>publicly accessible sources</strong> such as index and ETF providers,
+          exchange statistics and public reports. We do <strong>not</strong> use non-public or insider information.
+        </p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-header">
+        <div>Are performance or profits promised?</div>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-body">
+        <p>
+          No. Past market behaviour is <strong>not a reliable indicator</strong> of future results.
+          We make <strong>no performance, profit or outcome guarantees</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  © 2025 U.S. Market Context Brief · <strong>Educational use only — No investment advice, no guarantees.</strong>
+  <br/>
+  <a href="#" id="openPrivacy">Privacy Policy</a> ·
+  <a href="#" id="openDisclaimer">Disclaimer</a>
+</footer>
+
+<!-- Privacy Policy Modal -->
+<dialog class="modal" id="modalPrivacy" aria-labelledby="privTitle">
+  <div class="modal-head">
+    <div class="modal-title" id="privTitle">Privacy Policy</div>
+    <button class="modal-close" data-close-privacy aria-label="Close">Close ×</button>
+  </div>
+  <div class="modal-body">
+    <p class="modal-muted">Last updated: 26 November 2025</p>
+    <h1>Privacy Policy</h1>
+
+    <h2>1. Who we are</h2>
+    <p>
+      This website and the U.S. Market Context WhatsApp brief (the “Service”) are operated by
+      <strong>U.S. Market Context Brief</strong> (“we”, “us” or “our”).  
+      If you have questions about this Privacy Policy, you can contact us at:
+      <a href="/cdn-cgi/l/email-protection#2454564d5245475d64415c45495448410a474b49"><span class="__cf_email__" data-cfemail="c3b3b1aab5a2a0ba83a6bba2aeb3afa6eda0acae">[email&#160;protected]</span></a>.
+    </p>
+
+    <h2>2. What information we collect</h2>
+    <h3>a) Information you provide directly</h3>
+    <ul>
+      <li><strong>Contact details</strong>, such as your name, email address or WhatsApp number if you choose to share them.</li>
+      <li><strong>Messages and content</strong> that you send to us by email or via WhatsApp (for example, questions or feedback).</li>
+    </ul>
+
+    <h3>b) Information collected automatically</h3>
+    <p>When you visit this website, we may receive basic technical information sent by your browser, for example:</p>
+    <ul>
+      <li>IP address and approximate location (country or city level).</li>
+      <li>Date, time and duration of access.</li>
+      <li>Pages or files viewed, referrer URL and basic device information (browser type, operating system).</li>
+    </ul>
+
+    <h3>c) WhatsApp communication</h3>
+    <p>
+      If you contact us or receive the brief via WhatsApp, WhatsApp LLC / WhatsApp Ireland may process your data in
+      accordance with its own terms and privacy policy. We receive your WhatsApp profile name, phone number and your
+      messages so that we can send you the brief and respond.
+    </p>
+
+    <h2>3. How we use your information</h2>
+    <ul>
+      <li><strong>Provide the Service</strong> – to send you the U.S. Market Context brief and respond to your requests.</li>
+      <li><strong>Operate and secure the website</strong> – to monitor, maintain and improve the site and protect against abuse.</li>
+      <li><strong>Communicate with you</strong> – to send confirmations or follow-up messages related to the brief or your inquiries.</li>
+      <li><strong>Comply with legal obligations</strong> – to keep records where we are required to do so by applicable law.</li>
+    </ul>
+
+    <h2>4. Legal basis</h2>
+    <p>Depending on your location, our use of your information is based on one or more of the following:</p>
+    <ul>
+      <li><strong>Your consent</strong> – for example, when you request the brief by contacting us first.</li>
+      <li><strong>Legitimate interests</strong> – such as operating a secure website and communicating with people who contact us.</li>
+      <li><strong>Legal obligations</strong> – where we need to keep certain records or respond to lawful requests.</li>
+    </ul>
+
+    <h2>5. How we share information</h2>
+    <p>We do <strong>not</strong> sell your personal information. We may share limited information with:</p>
+    <ul>
+      <li><strong>Service providers</strong> who help us operate the website, email or messaging systems under confidentiality obligations.</li>
+      <li><strong>WhatsApp</strong> and similar communication platforms when you use them to contact us.</li>
+      <li><strong>Authorities or third parties</strong> where required by law, court order or to protect our rights or the rights of others.</li>
+    </ul>
+
+    <h2>6. International transfers</h2>
+    <p>
+      Depending on your location and the services we use, your information may be processed in countries outside your
+      home jurisdiction. We use reputable providers and aim to take reasonable measures to safeguard your information in
+      line with applicable law.
+    </p>
+
+    <h2>7. How long we keep information</h2>
+    <p>
+      We keep personal information only for as long as it is reasonably necessary for the purposes described in this
+      Privacy Policy, or as required by law. You can ask us to delete your conversations or contact details at any time
+      (see “Your rights”).
+    </p>
+
+    <h2>8. Your rights</h2>
+    <p>Depending on your location, you may have rights such as:</p>
+    <ul>
+      <li>The right to request access to the personal information we hold about you.</li>
+      <li>The right to ask us to correct inaccurate or incomplete information.</li>
+      <li>The right to ask for deletion of your personal information, subject to legal limitations.</li>
+      <li>The right to object to or restrict certain forms of processing.</li>
+    </ul>
+    <p>
+      To exercise any of these rights (where applicable), please email us at
+      <a href="/cdn-cgi/l/email-protection#3242405b4453514b72574a535f425e571c515d5f"><span class="__cf_email__" data-cfemail="0a7a78637c6b69734a6f726b677a666f24696567">[email&#160;protected]</span></a>. We may need to verify your identity before responding.
+    </p>
+
+    <h2>9. Security</h2>
+    <p>
+      We take reasonable technical and organisational measures to protect personal information against accidental or
+      unlawful destruction, loss, alteration, unauthorised disclosure or access. No method of transmission or storage is
+      completely secure, so we cannot guarantee absolute security.
+    </p>
+
+    <h2>10. Third-party sites</h2>
+    <p>
+      Our website or messages may contain links to third-party websites, platforms or content. We are not responsible for
+      the privacy practices of those third parties. We encourage you to review their privacy policies separately.
+    </p>
+
+    <h2>11. Children’s privacy</h2>
+    <p>
+      The Service is intended for adults and is <strong>not directed to children</strong>. We do not knowingly collect
+      personal information from children. If you believe a child has provided us with personal information, please contact
+      us so that we can delete it where appropriate.
+    </p>
+
+    <h2>12. Changes to this Privacy Policy</h2>
+    <p>
+      We may update this Privacy Policy from time to time. When we make material changes, we will adjust the “Last
+      updated” date at the top of this section. Your continued use of the website or Service after changes have been
+      posted will constitute acceptance of the revised policy.
+    </p>
+
+    <h2>13. Contact</h2>
+    <p>
+      If you have any questions or concerns about this Privacy Policy or our handling of personal information, please
+      contact us at <a href="/cdn-cgi/l/email-protection#b2c2c0dbc4d3d1cbf2d7cad3dfc2ded79cd1dddf"><span class="__cf_email__" data-cfemail="d4a4a6bda2b5b7ad94b1acb5b9a4b8b1fab7bbb9">[email&#160;protected]</span></a>.
+    </p>
+  </div>
+</dialog>
+
+<!-- Disclaimer Modal -->
+<dialog class="modal" id="modalDisclaimer" aria-labelledby="discTitle">
+  <div class="modal-head">
+    <div class="modal-title" id="discTitle">Disclaimer</div>
+    <button class="modal-close" data-close-disclaimer aria-label="Close">Close ×</button>
+  </div>
+  <div class="modal-body">
+    <p class="modal-muted">Last updated: 26 November 2025</p>
+    <h1>Disclaimer</h1>
+
+    <h2>1. Educational and informational purposes only</h2>
+    <p>
+      All content provided on this website and in the U.S. Market Context brief (the “Content”) is for
+      <span class="highlight">general informational and educational purposes only</span>. Nothing on this website or in
+      the brief is, or should be interpreted as:
+    </p>
+    <ul>
+      <li>personalised financial, investment or trading advice;</li>
+      <li>a recommendation to buy, sell or hold any security, asset or instrument;</li>
+      <li>a solicitation, offer or invitation to engage in any investment strategy.</li>
+    </ul>
+    <p>
+      The Content does not take into account your individual objectives, financial situation, risk tolerance or needs.
+      You are solely responsible for any investment or trading decisions you make.
+    </p>
+
+    <h2>2. No guarantees or promises of performance</h2>
+    <p>
+      The Content may refer to past market developments, price moves, volatility, indices, sectors or styles.
+      <span class="highlight">Past performance, historical patterns or back-tested scenarios are not reliable indicators
+      of future results.</span>
+    </p>
+    <p>
+      We do not guarantee or promise any particular outcome, profit or performance. Any examples, scenarios or market
+      comments are illustrative only and may be incomplete, simplified or subject to change without notice.
+    </p>
+
+    <h2>3. Independent decisions and professional advice</h2>
+    <p>Before making any investment, trading or financial decision, you should:</p>
+    <ul>
+      <li>conduct your own independent research and analysis; and</li>
+      <li>consider consulting a qualified financial, tax or legal professional who can take your personal circumstances into account.</li>
+    </ul>
+    <p>
+      You should not rely solely on the Content when deciding whether to invest in any security, fund, derivative or
+      other product.
+    </p>
+
+    <h2>4. No client relationship</h2>
+    <p>
+      The use of this website, contacting us via WhatsApp or receiving the brief does <strong>not</strong> create any
+      advisory, fiduciary, client, brokerage or other professional relationship between you and us.
+    </p>
+
+    <h2>5. Data sources and accuracy</h2>
+    <p>
+      The Content may be based on data obtained from public sources such as exchanges, index and ETF providers, public
+      reports or reputable data vendors. While we aim to use sources we consider reliable, we cannot guarantee that any
+      information is accurate, complete, up-to-date or error-free.
+    </p>
+    <p>
+      Market data may be delayed, rounded, aggregated or simplified for presentation. Opinions or views, where expressed,
+      reflect our judgment at the time of writing and are subject to change without notice.
+    </p>
+
+    <h2>6. No responsibility for losses</h2>
+    <p>
+      To the maximum extent permitted by applicable law, we and our owners, employees, contractors and partners shall not
+      be liable for any direct, indirect, incidental, consequential or special damages, losses or expenses of any kind,
+      including (without limitation) loss of profits or trading losses, arising out of or in connection with:
+    </p>
+    <ul>
+      <li>your use of, or reliance on, the Content;</li>
+      <li>any errors or omissions in the Content; or</li>
+      <li>any interruption, delay or unavailability of the website or brief.</li>
+    </ul>
+
+    <h2>7. Third-party references and trademarks</h2>
+    <p>
+      The Content may refer to third-party products, companies, media figures or commentators (for example, index
+      providers, ETFs, analysts or journalists) for descriptive or educational purposes only.
+      <span class="highlight">Such references do not imply endorsement, sponsorship or affiliation</span> by those third
+      parties, nor that we are endorsed or sponsored by them.
+    </p>
+    <p>
+      “WhatsApp” and any other third-party names or logos mentioned are trademarks of their respective owners. We are not
+      affiliated with or endorsed by WhatsApp LLC / WhatsApp Ireland or any broker, bank or financial institution.
+    </p>
+
+    <h2>8. No offer or solicitation</h2>
+    <p>
+      Nothing on this website or in the brief constitutes an offer or solicitation to buy or sell any security or other
+      financial instrument, or to engage in any investment strategy, in any jurisdiction where such offer or solicitation
+      would be unlawful.
+    </p>
+
+    <h2>9. Local restrictions</h2>
+    <p>
+      The Content may not be appropriate or permitted in all countries or for all categories of investors. It is your
+      responsibility to ensure that viewing or receiving the Content is permitted under the laws and regulations that
+      apply to you.
+    </p>
+
+    <h2>10. Changes to this disclaimer</h2>
+    <p>
+      We may update this disclaimer from time to time. When we make material changes, we will adjust the “Last updated”
+      date at the top of this section. We encourage you to review this page periodically to stay informed.
+    </p>
+
+    <h2>11. Contact</h2>
+    <p>
+      If you have questions about this disclaimer, please contact us at:
+      <span class="modal-muted"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="364543464659444276534e575b465a531855595b">[email&#160;protected]</a></span>
+    </p>
+  </div>
+</dialog>
+
+<!-- FAQ 折叠逻辑 -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    const header = item.querySelector('.faq-header');
+    const body   = item.querySelector('.faq-body');
+    const toggle = item.querySelector('.faq-toggle');
+
+    header.addEventListener('click', function(){
+      const isOpen = item.classList.contains('open');
+
+      document.querySelectorAll('.faq-item').forEach(function(other){
+        other.classList.remove('open');
+        const t = other.querySelector('.faq-toggle');
+        if(t) t.textContent = '+';
+        const b = other.querySelector('.faq-body');
+        if(b) b.style.maxHeight = '0px';
+      });
+
+      if(!isOpen){
+        item.classList.add('open');
+        toggle.textContent = '–';
+        body.style.maxHeight = body.scrollHeight + 'px';
+      }
+    });
+  });
+</script>
+
+<!-- Modal 打开 / 关闭逻辑 -->
+<script>
+  (function(){
+    const $ = s => document.querySelector(s);
+
+    const modalPrivacy    = $('#modalPrivacy');
+    const modalDisclaimer = $('#modalDisclaimer');
+
+    const openPrivacyLink    = $('#openPrivacy');
+    const openDisclaimerLink = $('#openDisclaimer');
+
+    const closePrivacyBtn    = modalPrivacy?.querySelector('[data-close-privacy]');
+    const closeDisclaimerBtn = modalDisclaimer?.querySelector('[data-close-disclaimer]');
+
+    function openModal(modal){
+      if(!modal) return;
+      if(typeof modal.showModal === 'function') modal.showModal();
+      else modal.setAttribute('open','open');
+      const btn = modal.querySelector('button');
+      if(btn) btn.focus();
+    }
+
+    function closeModal(modal){
+      if(!modal) return;
+      if(typeof modal.close === 'function') modal.close();
+      else modal.removeAttribute('open');
+    }
+
+    openPrivacyLink?.addEventListener('click', function(e){
+      e.preventDefault();
+      openModal(modalPrivacy);
+    });
+
+    openDisclaimerLink?.addEventListener('click', function(e){
+      e.preventDefault();
+      openModal(modalDisclaimer);
+    });
+
+    closePrivacyBtn?.addEventListener('click', function(){
+      closeModal(modalPrivacy);
+    });
+
+    closeDisclaimerBtn?.addEventListener('click', function(){
+      closeModal(modalDisclaimer);
+    });
+
+    [modalPrivacy, modalDisclaimer].forEach(function(modal){
+      if(!modal) return;
+      modal.addEventListener('click', function(e){
+        const rect = modal.getBoundingClientRect();
+        const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
+                       e.clientY >= rect.top && e.clientY <= rect.bottom;
+        if(!inside) closeModal(modal);
+      });
+    });
+  })();
+</script>
+
+<!-- 滚动进入动画逻辑 -->
+<script>
+  (function(){
+    const items = document.querySelectorAll('.js-reveal');
+    if(!('IntersectionObserver' in window) || !items.length){
+      items.forEach(el => el.classList.add('revealed'));
+      return;
+    }
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    },{threshold:0.18});
+    items.forEach(el=>observer.observe(el));
+  })();
+</script>
+
+<!-- 互动按钮逻辑 -->
+<script>
+  (function(){
+    const buttons = document.querySelectorAll('.scenario-btn');
+    const output  = document.getElementById('scenarioOutput');
+    if(!buttons.length || !output) return;
+
+    const copy = {
+      chase:
+        "<strong>This is how you turn yourself into exit liquidity.</strong> You buy after the giant candle, when the real move in indices and sectors is already old. The map shows you where leadership started so you can spot “late and tired” instead of paying for it.",
+      late:
+        "<strong>You only find out after the party.</strong> By the time you see the big headline, the rotation has already happened. The map rewinds the latest U.S. move and shows who led, who lagged and when it started, so next time you recognise it earlier.",
+      lost:
+        "<strong>You’re trading in the dark.</strong> If you don’t know where U.S. money is rotating, every trade feels random. The map lays out sectors and styles so you can see when your favourite corner is losing support."
+    };
+
+    buttons.forEach(btn=>{
+      btn.addEventListener('click', function(){
+        buttons.forEach(b=>b.classList.remove('active'));
+        this.classList.add('active');
+        const key = this.getAttribute('data-scenario');
+        output.innerHTML = copy[key] || output.innerHTML;
+      });
+    });
+  })();
+</script>
+
+<!-- CTA “磁性”交互：桌面端 -->
+<script>
+  (function(){
+    const shell = document.querySelector('.js-cta-shell');
+    if(!shell) return;
+    const mq = window.matchMedia('(pointer:fine)');
+    if(!mq.matches) return;
+
+    shell.addEventListener('mousemove', function(e){
+      const rect = shell.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width/2;
+      const y = e.clientY - rect.top - rect.height/2;
+      shell.style.transform = "translate3d(" + (x*0.04) + "px," + (y*0.04) + "px,0)";
+    });
+    shell.addEventListener('mouseleave', function(){
+      shell.style.transform = "translate3d(0,0,0)";
+    });
+  })();
+</script>
+<!-- Google Tag Manager (noscript) -->
+
+<!-- End Google Tag Manager (noscript) -->
+</body>
+</html>

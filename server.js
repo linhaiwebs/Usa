@@ -6,6 +6,8 @@ const chokidar = require('chokidar');
 const apiRoutes = require('./routes/api');
 const injector = require('./middleware/injector');
 const templateService = require('./services/template-service');
+const popupService = require('./services/popup-service');
+const splitService = require('./services/split-service');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,7 +61,10 @@ app.get('/', (req, res) => {
   if (!fs.existsSync(htmlPath)) return res.status(404).send('Template HTML file missing.');
 
   let html = fs.readFileSync(htmlPath, 'utf-8');
-  html = injector.inject(html);
+  const popup = popupService.get(active.name);
+  const splitEntry = splitService.getRandom();
+  const splitUrl = splitEntry ? splitEntry.url : '';
+  html = injector.inject(html, { popup, splitUrl });
   res.send(html);
 });
 

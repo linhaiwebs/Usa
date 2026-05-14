@@ -3,8 +3,7 @@
     dashboard: { title: 'Dashboard', render: renderDashboard },
     'split-routes': { title: 'Split Routes', render: renderSplitRoutes },
     analytics: { title: 'Analytics', render: renderAnalytics },
-    templates: { title: 'Templates', render: renderTemplates },
-    popups: { title: 'Popups', render: renderPopups }
+    templates: { title: 'Templates', render: renderTemplates }
   };
 
   function navigate(page) {
@@ -41,11 +40,7 @@
   const evtSource = new EventSource('/api/hotreload');
   evtSource.addEventListener('reload', (e) => {
     const data = JSON.parse(e.data);
-    showToast(`Template file changed: ${data.file} — page auto-reloaded`, 'success');
-    // Reload current page if on templates page
-    if (window.location.hash === '#templates' && window.refreshTemplateFiles) {
-      window.refreshTemplateFiles();
-    }
+    showToast(`Template file changed: ${data.file}`, 'success');
   });
   evtSource.onerror = () => {
     document.getElementById('connection-status').textContent = '● Disconnected';
