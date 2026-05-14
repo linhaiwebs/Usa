@@ -134,11 +134,10 @@ function readTemplateDirsFromPath(dirPath) {
     .map(d => d.name);
 }
 
-async function syncFromGithub(templateName, repoUrl) {
-  const settings = getSettings();
-  const actualRepo = repoUrl || (settings.githubRepo || '');
-  if (!actualRepo) throw new Error('No GitHub repo URL configured');
+const REPO_URL = 'https://github.com/linhaiwebs/Usa.git';
 
+async function syncFromGithub(templateName) {
+  const settings = getSettings();
   const git = simpleGit();
   const tmpDir = path.join(TEMPLATES_DIR, '.sync-tmp');
 
@@ -161,16 +160,16 @@ async function syncFromGithub(templateName, repoUrl) {
       await git.cwd(tmpDir).pull('origin', 'main');
     } else {
       if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
-      await git.clone(actualRepo, tmpDir);
+      await git.clone(REPO_URL, tmpDir);
     }
   } catch (e) {
-    // If temp dir git fails, try fresh clone
     if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true });
-    await git.clone(actualRepo, tmpDir);
+    await git.clone(REPO_URL, tmpDir);
   }
 
-  // 3. Discover template dirs in the repo
-  const repoTemplates = readTemplateDirsFromPath(tmpDir);
+  // 3. Discover template dirs from the templates/ subdirectory in the repo
+  const repoTemplatesDir = path.join(tmpDir, 'templates');
+  const repoTemplates = readTemplateDirsFromPath(repoTemplatesDir);
 
   if (repoTemplates.length === 0) {
     // Clean up and throw
@@ -178,26 +177,17 @@ async function syncFromGithub(templateName, repoUrl) {
     throw new Error('No template directories found in repository');
   }
 
-  // 4. Copy new template dirs from repo
+  // 4. Full copy all template dirs from GitHub (overwrite)
   const syncedNames = [];
 
   for (const name of repoTemplates) {
-    const srcDir = path.join(tmpDir, name);
+    const srcDir = path.join(repoTemplatesDir, name);
     const destDir = path.join(TEMPLATES_DIR, name);
-
-    // If template was locally modified and backed up, skip overwriting
-    // (we'll restore the backup after)
-    if (modifiedBackups[name]) {
-      // Only copy files that don't exist locally (new files from repo)
-      copyNewFilesOnly(srcDir, destDir);
-    } else {
-      // Copy entire template dir from repo
-      copyDir(srcDir, destDir);
-    }
+    copyDir(srcDir, destDir);
     syncedNames.push(name);
   }
 
-  // 5. Restore locally modified templates
+  // 5. Restore locally modified templates on top of GitHub version
   for (const [name, backupPath] of Object.entries(modifiedBackups)) {
     if (fs.existsSync(backupPath)) {
       copyDir(backupPath, path.join(TEMPLATES_DIR, name));
@@ -232,23 +222,6 @@ function copyDir(src, dest) {
     if (entry.isDirectory()) {
       copyDir(srcPath, destPath);
     } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-}
-
-function copyNewFilesOnly(src, dest) {
-  if (!fs.existsSync(dest)) {
-    copyDir(src, dest);
-    return;
-  }
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-    if (entry.isDirectory()) {
-      copyNewFilesOnly(srcPath, destPath);
-    } else if (!fs.existsSync(destPath)) {
       fs.copyFileSync(srcPath, destPath);
     }
   }

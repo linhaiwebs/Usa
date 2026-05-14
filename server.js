@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const net = require('net');
 const crypto = require('crypto');
 const chokidar = require('chokidar');
 const apiRoutes = require('./routes/api');
@@ -11,12 +12,51 @@ const popupService = require('./services/popup-service');
 const splitService = require('./services/split-service');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const DATA_DIR = path.join(__dirname, 'data');
+const PORT_FILE = path.join(DATA_DIR, '.port');
 const TEMPLATES_DIR = path.join(__dirname, 'templates');
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'ads-secret-' + crypto.randomBytes(16).toString('hex');
 const ADMIN_USER = 'adsadmin';
 const ADMIN_PASS = 'Mm123567';
 const TOKEN_COOKIE = 'ads_token';
+
+// --- Port auto-selection ---
+function portInUse(port) {
+  return new Promise(resolve => {
+    const server = net.createServer();
+    server.once('error', () => { server.removeAllListeners(); resolve(true); });
+    server.once('listening', () => { server.removeAllListeners(); server.close(() => resolve(false)); });
+    server.listen(port, '0.0.0.0');
+  });
+}
+
+function readLastPort() {
+  try {
+    if (fs.existsSync(PORT_FILE)) {
+      const p = parseInt(fs.readFileSync(PORT_FILE, 'utf-8').trim(), 10);
+      if (p >= 3000 && p < 65536) return p;
+    }
+  } catch (_) { /* ignore */ }
+  return 0;
+}
+
+function savePort(port) {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(PORT_FILE, String(port), 'utf-8');
+}
+
+async function findPort() {
+  const basePort = parseInt(process.env.PORT, 10) || readLastPort() || 3000;
+  for (let offset = 0; offset < 100; offset++) {
+    const port = basePort + offset;
+    if (!(await portInUse(port))) {
+      savePort(port);
+      return port;
+    }
+  }
+  throw new Error('No available port found (tried 3000–3100)');
+}
+// --- End port auto-selection ---
 
 app.use(express.json());
 
@@ -148,8 +188,13 @@ app.get('/', (req, res) => {
 // API routes
 app.use('/api', apiRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Admin: http://localhost:${PORT}/adsadmin (user: ${ADMIN_USER} / pass: ${ADMIN_PASS})`);
-  console.log(`Landing page: http://localhost:${PORT}`);
+findPort().then(PORT => {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Admin: http://localhost:${PORT}/adsadmin (user: ${ADMIN_USER} / pass: ${ADMIN_PASS})`);
+    console.log(`Landing page: http://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error('Failed to start server:', err.message);
+  process.exit(1);
 });

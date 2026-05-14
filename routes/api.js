@@ -65,8 +65,7 @@ router.put('/templates/:name/category', (req, res) => {
 });
 router.post('/templates/:name/sync', async (req, res) => {
   try {
-    const repoUrl = req.body.repoUrl || '';
-    const result = await templateService.syncFromGithub(req.params.name, repoUrl);
+    const result = await templateService.syncFromGithub(req.params.name);
     res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });

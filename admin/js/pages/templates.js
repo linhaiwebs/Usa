@@ -17,8 +17,6 @@ async function renderTemplates() {
     let editorFile = '';
     let editorOriginal = '';
 
-    const settingsRepo = templates.length > 0 ? (templates[0].githubRepo || '') : '';
-
     container.innerHTML = `
       <div class="card">
         <div class="card-header">
@@ -29,7 +27,6 @@ async function renderTemplates() {
               <button class="btn btn-sm cat-filter" data-cat="人设" onclick="filterByCategory('人设', this)">人设</button>
               <button class="btn btn-sm cat-filter" data-cat="诊股" onclick="filterByCategory('诊股', this)">诊股</button>
             </div>
-            <input id="global-github-repo" placeholder="GitHub 仓库地址" value="${escHtml(settingsRepo)}" style="padding:4px 8px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:11px;width:200px">
             <button class="btn btn-sm btn-success" onclick="syncAllTemplates()">从 GitHub 同步</button>
           </div>
         </div>
@@ -342,9 +339,6 @@ async function renderTemplates() {
 
     // ---- GitHub 同步 ----
     window.syncAllTemplates = async () => {
-      const repo = document.getElementById('global-github-repo').value.trim();
-      if (!repo) return showToast('请输入 GitHub 仓库地址', 'error');
-
       const name = activeName || (templates[0] && templates[0].name);
       if (!name) return showToast('无可用模板', 'error');
 
@@ -352,7 +346,7 @@ async function renderTemplates() {
       btn.disabled = true;
       btn.textContent = '同步中...';
       try {
-        const result = await API.post(`/api/templates/${name}/sync`, { repoUrl: repo });
+        const result = await API.post(`/api/templates/${name}/sync`, {});
         showToast(`同步完成: ${result.synced.length} 个模板已更新`, 'success');
         setTimeout(() => renderTemplates(), 500);
       } catch (e) {
