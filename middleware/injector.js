@@ -14,6 +14,21 @@ function getGAScript(config) {
 <!-- End Google Tag Manager -->`;
 }
 
+function getPopupCSS() {
+  return `<style>
+.lp-popup-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;animation:lpFadeIn .22s ease}
+@keyframes lpFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes lpPopIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.lp-popup-box{background:radial-gradient(circle at top,rgba(15,23,42,.98),transparent 65%),#050816;border:1px solid rgba(248,113,113,.55);border-radius:20px;padding:2rem 1.8rem 1.8rem;max-width:460px;width:100%;position:relative;box-shadow:0 40px 120px rgba(0,0,0,1),0 0 80px rgba(248,113,113,.35);animation:lpPopIn .3s ease;text-align:center}
+.lp-popup-close{position:absolute;top:12px;right:16px;background:none;border:none;color:#9ca3af;font-size:24px;cursor:pointer;line-height:1;transition:color .15s;font-family:Inter,sans-serif}
+.lp-popup-close:hover{color:#e5e7eb}
+.lp-popup-box h3{font-size:1.15rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#fee2e2;margin-bottom:.5rem;text-shadow:0 0 10px rgba(248,113,113,.8)}
+.lp-popup-box p{font-size:.84rem;color:#9ca3af;margin-bottom:.6rem;line-height:1.5}
+.lp-popup-body a[data-cta="split"]{display:inline-block;width:100%;padding:.9rem 1.5rem;border-radius:999px;font-weight:800;font-size:.9rem;text-decoration:none;box-sizing:border-box}
+@media(max-width:480px){.lp-popup-box{padding:1.5rem 1.2rem 1.4rem}.lp-popup-box h3{font-size:1rem}}
+<\/style>`;
+}
+
 function getPopupScript(config, splitUrl) {
   if (!config.enabled || !config.content) return '';
 
@@ -31,7 +46,7 @@ function getPopupScript(config, splitUrl) {
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '');
 
-  return `<script>
+  return getPopupCSS() + `<script>
 (function(){
   var cfg = ${JSON.stringify({ ...config, content: resolvedContent })};
   var shown = false;
