@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "type": "modal",
+  "title": "Get AI-Powered Stock Insights",
+  "content": "<p style=\"text-align:center;font-size:1.05em;margin-bottom:16px\">Real-time market trends, portfolio health scores, and AI stock analysis — delivered to your WhatsApp.</p><a href=\"#\" data-cta=\"split\" style=\"display:inline-block;padding:14px 32px;background:#c3f400;color:#161e00;border-radius:999px;text-decoration:none;font-weight:800;font-size:1em;box-shadow:0 0 20px rgba(195,244,0,0.15)\">Start Analysis</a><p style=\"text-align:center;font-size:0.75em;color:#8e9379;margin-top:12px\">Free · Educational only · No investment advice</p>",
+  "delay": 5000,
+  "showOnce": true
+}
