@@ -105,6 +105,7 @@ async function renderTemplates() {
             <div class="form-group">
               <label>触发类型</label>
               <select id="popup-type">
+                <option value="manual">手动触发</option>
                 <option value="modal">定时弹窗</option>
                 <option value="exit-intent">退出意图</option>
               </select>

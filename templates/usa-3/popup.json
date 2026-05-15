@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "type": "modal",
+  "type": "manual",
   "title": "Don't Trade Blind — Get the U.S. Market Map First",
   "content": "<p style=\"text-align:center;font-size:1.05em;margin-bottom:14px\">A brutally honest U.S. market structure brief: indices, sectors, styles and rotations — before you put money at risk.</p><a href=\"#\" data-cta=\"split\" style=\"display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#ff6b6b,#ff4444);color:#fff;border-radius:999px;text-decoration:none;font-weight:800;font-size:1em\">📲 Yes — Show Me the U.S. Market Map in WhatsApp</a><p style=\"text-align:center;font-size:0.75em;color:#9ca3af;margin-top:12px\">Free · Educational only · Public data · No investment advice</p>",
-  "delay": 5000,
+  "delay": 0,
   "showOnce": true
 }

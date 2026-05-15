@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "type": "modal",
+  "type": "manual",
   "title": "Get Your Free April U.S. Market Brief",
   "content": "<p style=\"text-align:center;font-size:1.05em;margin-bottom:16px\">A short, structured recap of U.S. indices, sectors and styles — in one phone-friendly WhatsApp brief.</p><a href=\"#\" data-cta=\"split\" style=\"display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#38bdf8,#6366f1);color:#020617;border-radius:999px;text-decoration:none;font-weight:800;font-size:1em\">Get the Free April Brief on WhatsApp</a><p style=\"text-align:center;font-size:0.75em;color:#9ca3af;margin-top:12px\">Free · Educational only · Public data · No investment advice</p>",
-  "delay": 4000,
+  "delay": 0,
   "showOnce": true
 }

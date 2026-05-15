@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "type": "modal",
+  "type": "manual",
   "title": "Get Your Free Stock Screening Report",
   "content": "<p style=\"text-align:center;font-size:1.05em;margin-bottom:16px\">Quick technical scan of trending tickers — RSI, MACD, volume alerts, and institutional flows in one view.</p><a href=\"#\" data-cta=\"split\" style=\"display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#1a73e8,#00bcd4);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:800;font-size:1em;box-shadow:0 0 20px rgba(26,115,232,0.15)\">View Stock Scan Now</a><p style=\"text-align:center;font-size:0.75em;color:#8b909f;margin-top:12px\">Free · Educational only · No investment advice</p>",
-  "delay": 5000,
+  "delay": 0,
   "showOnce": true
 }
