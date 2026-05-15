@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "type": "modal",
+  "title": "Master Technical Indicators Today",
+  "content": "<p style=\"text-align:center;font-size:1.05em;margin-bottom:16px\">Learn how RSI, MACD, Bollinger Bands and more work with real-world examples. Interactive stock diagnosis tool — free educational access.</p><a href=\"#\" data-cta=\"split\" style=\"display:inline-block;padding:14px 32px;background:#24389c;color:#ffffff;border-radius:999px;text-decoration:none;font-weight:600;font-size:1em;box-shadow:0 4px 16px rgba(36,56,156,0.25)\">Start Learning</a><p style=\"text-align:center;font-size:0.75em;color:#757684;margin-top:12px\">Free · Educational only · No investment advice</p>",
+  "delay": 5000,
+  "showOnce": true
+}

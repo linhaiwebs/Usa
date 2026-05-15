@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StockLens — AI-Powered Stock Diagnosis</title>
+<meta name="description" content="AI-driven stock diagnosis dashboard. Technical indicators, market scanning, and data-driven insights for educational reference."/>
+<meta name="robots" content="index,follow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+<style>
+/* ================================================================
+   StockLens — CSS Custom Properties
+   ================================================================ */
+:root {
+  --s8-bg:                  #0a0e17;
+  --s8-surface:             #0a0e17;
+  --s8-surface-dim:         #0a0e17;
+  --s8-surface-lowest:      #05070b;
+  --s8-surface-low:         #121826;
+  --s8-surface-container:   #181b25;
+  --s8-surface-container-high:  #262a34;
+  --s8-surface-container-highest: #2c303a;
+  --s8-surface-variant:     #2c303a;
+  --s8-surface-bright:      #353943;
+
+  --s8-primary:             #1a73e8;
+  --s8-primary-container:   #1a73e8;
+  --s8-primary-fixed:       #d8e2ff;
+  --s8-primary-fixed-dim:   #adc7ff;
+
+  --s8-secondary:           #00bcd4;
+  --s8-secondary-container: #00bcd4;
+  --s8-secondary-fixed-dim: #44d8f1;
+
+  --s8-tertiary:            #4edea3;
+  --s8-tertiary-container:  #00885d;
+
+  --s8-error:               #ffb4ab;
+  --s8-error-container:     #93000a;
+
+  --s8-on-surface:          #dfe2ef;
+  --s8-on-surface-variant:  #c1c6d6;
+  --s8-on-background:       #dfe2ef;
+  --s8-on-primary:          #ffffff;
+  --s8-on-primary-container:#ffffff;
+
+  --s8-outline:             #8b909f;
+  --s8-outline-variant:     #414754;
+
+  --s8-radius:              4px;
+  --s8-radius-lg:           8px;
+  --s8-radius-xl:           12px;
+  --s8-radius-card:         20px;
+  --s8-radius-full:         9999px;
+}
+
+/* ================================================================
+   Reset & Base
+   ================================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: var(--s8-bg);
+  color: var(--s8-on-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* ================================================================
+   Material Symbols Outlined
+   ================================================================ */
+.ms-icon {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================================================================
+   Typography (mirrors Stitch Tailwind config)
+   ================================================================ */
+.s8-display-lg {
+  font-family: "Inter", sans-serif;
+  font-size: 40px;
+  line-height: 48px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+.s8-headline-lg {
+  font-family: "Inter", sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+.s8-headline-md {
+  font-family: "Inter", sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+.s8-headline-lg-mobile {
+  font-family: "Inter", sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+.s8-body-lg {
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 400;
+}
+.s8-body-md {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+.s8-label-md {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+.s8-label-sm {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.s8-data-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+/* ================================================================
+   Glass panel & card shape (from Stitch custom CSS)
+   ================================================================ */
+.s8-glass {
+  background: rgba(18, 24, 38, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.s8-card-shape {
+  border-radius: var(--s8-radius-card);
+}
+
+/* ================================================================
+   Top Disclaimer Bar
+   ================================================================ */
+.s8-disclaimer-bar {
+  background: var(--s8-surface-container-high);
+  padding: 4px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--s8-outline-variant);
+}
+.s8-disclaimer-bar .s8-disclaimer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--s8-on-surface-variant);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+/* ================================================================
+   Header
+   ================================================================ */
+.s8-header {
+  background: var(--s8-surface);
+  border-bottom: 1px solid var(--s8-outline-variant);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 16px;
+  height: 64px;
+}
+.s8-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.s8-header-logo-icon {
+  color: var(--s8-primary);
+  font-size: 24px;
+}
+.s8-header-brand {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--s8-on-surface);
+}
+.s8-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.s8-header-badge {
+  background: var(--s8-surface-container);
+  padding: 2px 8px;
+  border-radius: var(--s8-radius);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.s8-header-tag {
+  background: var(--s8-surface-variant);
+  padding: 4px 8px;
+  border-radius: var(--s8-radius);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-on-surface-variant);
+}
+
+/* ================================================================
+   Main Container
+   ================================================================ */
+.s8-main {
+  padding-bottom: 32px;
+}
+
+/* ================================================================
+   Hero Section
+   ================================================================ */
+.s8-hero {
+  padding: 32px 16px 24px;
+  border-bottom: 1px solid var(--s8-outline-variant);
+}
+.s8-hero-title {
+  color: var(--s8-on-surface);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.s8-hero-desc {
+  color: var(--s8-on-surface-variant);
+  margin-bottom: 16px;
+  max-width: 672px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+.s8-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.s8-hero-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-secondary);
+}
+.s8-hero-dot {
+  position: relative;
+  display: flex;
+  height: 12px;
+  width: 12px;
+}
+.s8-hero-dot-ping {
+  position: absolute;
+  display: inline-flex;
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+  background: var(--s8-secondary);
+  opacity: 0.75;
+  animation: s8-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.s8-hero-dot-inner {
+  position: relative;
+  display: inline-flex;
+  border-radius: 50%;
+  height: 12px;
+  width: 12px;
+  background: var(--s8-secondary);
+}
+@keyframes s8-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+.s8-hero-btn {
+  background: var(--s8-primary);
+  color: var(--s8-on-primary);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  justify-content: center;
+  font-family: "Inter", sans-serif;
+}
+.s8-hero-btn:hover {
+  background: var(--s8-primary-container);
+}
+
+/* ================================================================
+   Stocks Carousel Section
+   ================================================================ */
+.s8-carousel-section {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+.s8-carousel-header {
+  padding: 0 16px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.s8-carousel-title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  color: var(--s8-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.s8-carousel-track {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 0 16px 16px;
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.s8-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* ================================================================
+   Stock Card
+   ================================================================ */
+.s8-card {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: 280px;
+}
+.s8-card-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 16px;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background-color 0.15s;
+}
+.s8-card-btn:hover {
+  background: var(--s8-surface-container-highest);
+}
+.s8-card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.s8-card-ticker {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--s8-on-surface);
+}
+.s8-card-company {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-on-surface-variant);
+}
+.s8-card-badge {
+  padding: 2px 8px;
+  border-radius: var(--s8-radius-full);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.s8-badge-overbought {
+  background: rgba(0, 188, 212, 0.1);
+  border: 1px solid rgba(0, 188, 212, 0.2);
+  color: var(--s8-secondary);
+}
+.s8-badge-oversold {
+  background: rgba(255, 180, 171, 0.1);
+  border: 1px solid rgba(255, 180, 171, 0.2);
+  color: var(--s8-error);
+}
+.s8-badge-neutral {
+  background: rgba(0, 136, 93, 0.1);
+  border: 1px solid rgba(0, 136, 93, 0.2);
+  color: var(--s8-tertiary);
+}
+.s8-card-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.s8-card-price {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 18px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--s8-on-surface);
+}
+.s8-card-change-up {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--s8-tertiary);
+}
+.s8-card-change-down {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--s8-error);
+}
+.s8-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(65, 71, 84, 0.3);
+}
+.s8-card-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-primary);
+  opacity: 0.8;
+  justify-content: center;
+  width: 100%;
+  transition: opacity 0.15s;
+}
+.s8-card-btn:hover .s8-card-link {
+  opacity: 1;
+}
+.s8-card-icon-btn {
+  background: rgba(26, 115, 232, 0.2);
+  color: var(--s8-primary);
+  padding: 4px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.s8-card-icon-btn .ms-icon {
+  font-size: 16px;
+}
+
+/* ================================================================
+   Indicators Section
+   ================================================================ */
+.s8-section {
+  padding: 24px 16px;
+  border-top: 1px solid var(--s8-outline-variant);
+}
+.s8-section-title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--s8-on-surface);
+}
+.s8-indicator-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.s8-indicator-card {
+  background: var(--s8-surface-container);
+  padding: 16px;
+  border-radius: var(--s8-radius-lg);
+  border: 1px solid rgba(65, 71, 84, 0.5);
+}
+.s8-indicator-card h4 {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--s8-primary);
+}
+.s8-indicator-card p {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s8-on-surface-variant);
+}
+.s8-indicator-note {
+  font-size: 11px;
+  color: var(--s8-outline);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* ================================================================
+   FAQ Section
+   ================================================================ */
+.s8-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.s8-faq-item {
+  background: var(--s8-surface-container);
+  padding: 16px;
+  border-radius: var(--s8-radius-lg);
+  border: 1px solid rgba(65, 71, 84, 0.5);
+}
+.s8-faq-item summary {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--s8-on-surface);
+}
+.s8-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.s8-faq-item summary .ms-icon {
+  transition: transform 0.2s;
+}
+.s8-faq-item[open] summary .ms-icon {
+  transform: rotate(180deg);
+}
+.s8-faq-item p {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s8-on-surface-variant);
+  margin-top: 8px;
+}
+
+/* ================================================================
+   Social Proof Section
+   ================================================================ */
+.s8-social-section {
+  padding: 24px 16px;
+  border-top: 1px solid var(--s8-outline-variant);
+  background: var(--s8-surface-lowest);
+  text-align: center;
+}
+.s8-social-title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--s8-on-surface);
+}
+.s8-testimonials {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.s8-testimonial {
+  background: var(--s8-surface-container);
+  padding: 8px;
+  border-radius: var(--s8-radius-lg);
+  border: 1px solid rgba(65, 71, 84, 0.5);
+  text-align: left;
+  max-width: 320px;
+}
+.s8-testimonial p {
+  font-size: 14px;
+  line-height: 20px;
+  font-style: italic;
+  color: var(--s8-on-surface-variant);
+}
+.s8-ratings {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--s8-secondary);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.s8-ratings .ms-icon {
+  color: var(--s8-secondary);
+  font-size: 16px;
+}
+.s8-ratings-text {
+  margin-left: 4px;
+  color: var(--s8-on-surface-variant);
+  font-weight: 400;
+}
+
+/* ================================================================
+   CTA Section
+   ================================================================ */
+.s8-cta-section {
+  padding: 32px 16px;
+  border-top: 1px solid var(--s8-outline-variant);
+  background: var(--s8-surface-container-high);
+  text-align: center;
+}
+.s8-cta-title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--s8-on-surface);
+}
+.s8-cta-desc {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--s8-on-surface-variant);
+  margin-bottom: 16px;
+  max-width: 448px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.s8-cta-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.s8-cta-btn {
+  background: var(--s8-primary);
+  color: var(--s8-on-primary);
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+}
+.s8-cta-btn:hover {
+  background: var(--s8-primary-container);
+}
+.s8-cta-note {
+  font-size: 11px;
+  color: var(--s8-outline);
+  margin-top: 8px;
+}
+
+/* ================================================================
+   Footer
+   ================================================================ */
+.s8-footer {
+  width: 100%;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--s8-surface-lowest);
+  border-top: 1px solid var(--s8-outline-variant);
+}
+.s8-footer-brand {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  color: var(--s8-primary);
+  margin-bottom: 16px;
+}
+.s8-footer-text {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--s8-on-surface-variant);
+  max-width: 48rem;
+  line-height: 1.625;
+  margin-bottom: 16px;
+}
+.s8-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.s8-footer-links a {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-on-surface-variant);
+  text-decoration: underline;
+  transition: color 0.15s;
+}
+.s8-footer-links a:hover {
+  color: var(--s8-secondary);
+}
+
+/* ================================================================
+   Stock Detail Modal (hidden by default)
+   ================================================================ */
+.s8-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.s8-modal-overlay.open {
+  display: flex;
+}
+.s8-modal-content {
+  background: var(--s8-surface);
+  width: 100%;
+  max-width: 512px;
+  border-radius: var(--s8-radius-card);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--s8-outline-variant);
+  backdrop-filter: blur(12px);
+}
+.s8-modal-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--s8-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.s8-modal-header-left h3 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--s8-on-surface);
+}
+.s8-modal-header-left p {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-on-surface-variant);
+}
+.s8-modal-header-actions {
+  display: flex;
+  gap: 8px;
+}
+.s8-modal-diag-btn {
+  background: var(--s8-primary);
+  color: var(--s8-on-primary);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "Inter", sans-serif;
+  white-space: nowrap;
+}
+.s8-modal-diag-btn:hover {
+  background: var(--s8-primary-container);
+}
+.s8-modal-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--s8-on-surface-variant);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.s8-modal-close-btn:hover {
+  color: var(--s8-on-surface);
+}
+.s8-modal-body {
+  padding: 16px;
+}
+.s8-modal-table {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 16px;
+  border-collapse: collapse;
+}
+.s8-modal-table tbody tr {
+  border-bottom: 1px solid rgba(65, 71, 84, 0.3);
+  transition: background-color 0.15s;
+}
+.s8-modal-table tbody tr:hover {
+  background: var(--s8-surface-low);
+}
+.s8-modal-table td {
+  padding: 8px 0;
+}
+.s8-modal-table td:first-child {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  color: var(--s8-on-surface-variant);
+}
+.s8-modal-table td:last-child {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  text-align: right;
+  color: var(--s8-on-surface);
+}
+.s8-modal-table td:last-child.s8-cell-up {
+  color: var(--s8-tertiary);
+}
+.s8-modal-note {
+  background: var(--s8-surface-container);
+  padding: 8px;
+  border-radius: var(--s8-radius-lg);
+  border: 1px solid var(--s8-outline-variant);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.s8-modal-note .ms-icon {
+  color: var(--s8-outline);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.s8-modal-note p {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--s8-outline);
+}
+.s8-modal-footer {
+  padding: 16px;
+  border-top: 1px solid var(--s8-outline-variant);
+}
+.s8-modal-close-full {
+  width: 100%;
+  background: var(--s8-surface-container-high);
+  border: 1px solid var(--s8-outline-variant);
+  color: var(--s8-on-surface);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  padding: 8px 0;
+  border-radius: var(--s8-radius-lg);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  font-family: "Inter", sans-serif;
+}
+.s8-modal-close-full:hover {
+  background: var(--s8-surface-container-highest);
+}
+
+/* ================================================================
+   Policy / Disclaimer Dialog
+   ================================================================ */
+.s8-dialog {
+  border: 1px solid var(--s8-outline-variant);
+  border-radius: var(--s8-radius-card);
+  background: var(--s8-surface);
+  color: var(--s8-on-surface);
+  padding: 0;
+  max-width: 560px;
+  width: 90vw;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+}
+.s8-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.s8-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--s8-outline-variant);
+}
+.s8-dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--s8-on-surface);
+}
+.s8-dialog-close {
+  background: var(--s8-surface-container);
+  color: var(--s8-on-surface-variant);
+  border: 1px solid var(--s8-outline-variant);
+  padding: 4px 12px;
+  border-radius: var(--s8-radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
+  transition: background-color 0.15s;
+}
+.s8-dialog-close:hover {
+  background: var(--s8-surface-container-high);
+}
+.s8-dialog-body {
+  padding: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.s8-dialog-body h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+  color: var(--s8-on-surface);
+}
+.s8-dialog-body h2:first-child {
+  margin-top: 0;
+}
+.s8-dialog-body p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--s8-on-surface-variant);
+  margin-bottom: 8px;
+}
+
+/* ================================================================
+   Scroll Reveal Animation
+   ================================================================ */
+.js-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.js-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ================================================================
+   Responsive — md: 768px+
+   ================================================================ */
+@media (min-width: 768px) {
+  .s8-header {
+    padding: 0 48px;
+  }
+  .s8-hero {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+  .s8-headline-lg-mobile {
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+  .s8-carousel-header {
+    padding: 0 48px;
+  }
+  .s8-carousel-track {
+    padding: 0 48px 16px;
+  }
+  .s8-section {
+    padding: 24px 48px;
+  }
+  .s8-social-section {
+    padding: 24px 48px;
+  }
+  .s8-cta-section {
+    padding: 32px 48px;
+  }
+  .s8-footer {
+    padding: 32px 48px;
+  }
+  .s8-indicator-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .s8-cta-form {
+    flex-direction: row;
+  }
+  .s8-cta-btn {
+    width: fit-content;
+  }
+}
+
+/* ================================================================
+   Responsive — lg: 1024px+
+   ================================================================ */
+@media (min-width: 1024px) {
+  .s8-indicator-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ================================================================
+   Inline utility
+   ================================================================ */
+.s8-hidden-desktop {
+  display: block;
+}
+@media (min-width: 768px) {
+  .s8-hidden-desktop {
+    display: none;
+  }
+}
+.s8-hidden-mobile {
+  display: none;
+}
+@media (min-width: 768px) {
+  .s8-hidden-mobile {
+    display: block;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     Top Disclaimer Bar
+     ================================================================ -->
+<div class="s8-disclaimer-bar">
+  <div class="s8-disclaimer-inner">
+    Educational Tool · Not Investment Advice
+  </div>
+</div>
+
+<!-- ================================================================
+     Header
+     ================================================================ -->
+<header class="s8-header">
+  <div class="s8-header-left">
+    <span class="ms-icon s8-header-logo-icon">monitoring</span>
+    <span class="s8-header-brand">StockLens</span>
+  </div>
+  <div class="s8-header-right">
+    <span class="s8-header-badge">Sponsored</span>
+    <span class="s8-header-tag">Educational Tool</span>
+  </div>
+</header>
+
+<!-- ================================================================
+     Main Content
+     ================================================================ -->
+<main class="s8-main">
+
+  <!-- Hero Section -->
+  <section class="s8-hero js-reveal">
+    <h2 class="s8-headline-lg-mobile s8-hero-title">Stock Diagnosis Dashboard · AI-Powered Technical Scan</h2>
+    <p class="s8-hero-desc">Objective data based on RSI, MACD, and Institutional Flows — for educational reference. Explore trending tickers and understand key technical indicators.</p>
+    <div class="s8-hero-actions">
+      <div class="s8-hero-live">
+        <span class="s8-hero-dot">
+          <span class="s8-hero-dot-ping"></span>
+          <span class="s8-hero-dot-inner"></span>
+        </span>
+        Data updated · [14:30] ET
+      </div>
+      <button class="s8-hero-btn" onclick="showSitePopup(); return false;">
+        <span class="ms-icon" style="font-size:16px">stethoscope</span>
+        AI Diagnosis
+      </button>
+    </div>
+  </section>
+
+  <!-- Hot Stocks Carousel -->
+  <section class="s8-carousel-section js-reveal">
+    <div class="s8-carousel-header">
+      <h3 class="s8-carousel-title">Most Watched Stocks (Last Hour)</h3>
+    </div>
+    <div class="s8-carousel-track">
+
+      <!-- NVDA -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='NVDA'; document.getElementById('s8ModalCompany').textContent='NVIDIA Corp';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">NVDA</div>
+                <div class="s8-card-company">NVIDIA Corp</div>
+              </div>
+              <span class="s8-card-badge s8-badge-overbought">Overbought</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$125.10</span>
+              <span class="s8-card-change-up">+2.4%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+      <!-- TSLA -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='TSLA'; document.getElementById('s8ModalCompany').textContent='Tesla Inc';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">TSLA</div>
+                <div class="s8-card-company">Tesla Inc</div>
+              </div>
+              <span class="s8-card-badge s8-badge-oversold">Oversold</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$240.50</span>
+              <span class="s8-card-change-down">-1.2%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+      <!-- AAPL -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='AAPL'; document.getElementById('s8ModalCompany').textContent='Apple Inc';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">AAPL</div>
+                <div class="s8-card-company">Apple Inc</div>
+              </div>
+              <span class="s8-card-badge s8-badge-neutral">Neutral</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$220.15</span>
+              <span class="s8-card-change-up">+0.5%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+      <!-- AMD -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='AMD'; document.getElementById('s8ModalCompany').textContent='Advanced Micro Devices';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">AMD</div>
+                <div class="s8-card-company">Advanced Micro Devices</div>
+              </div>
+              <span class="s8-card-badge s8-badge-overbought">Overbought</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$160.20</span>
+              <span class="s8-card-change-up">+1.8%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+      <!-- META -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='META'; document.getElementById('s8ModalCompany').textContent='Meta Platforms';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">META</div>
+                <div class="s8-card-company">Meta Platforms</div>
+              </div>
+              <span class="s8-card-badge s8-badge-neutral">Neutral</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$520.40</span>
+              <span class="s8-card-change-down">-0.3%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+      <!-- MSFT -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='MSFT'; document.getElementById('s8ModalCompany').textContent='Microsoft Corp';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">MSFT</div>
+                <div class="s8-card-company">Microsoft Corp</div>
+              </div>
+              <span class="s8-card-badge s8-badge-overbought">Overbought</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$415.60</span>
+              <span class="s8-card-change-up">+0.1%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+      <!-- GOOGL -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='GOOGL'; document.getElementById('s8ModalCompany').textContent='Alphabet Inc';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">GOOGL</div>
+                <div class="s8-card-company">Alphabet Inc</div>
+              </div>
+              <span class="s8-card-badge s8-badge-oversold">Oversold</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$175.30</span>
+              <span class="s8-card-change-down">-0.8%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+      <!-- PLTR -->
+      <div class="s8-card">
+        <button class="s8-card-btn s8-glass s8-card-shape" onclick="document.getElementById('s8Modal').classList.add('open'); document.getElementById('s8ModalTicker').textContent='PLTR'; document.getElementById('s8ModalCompany').textContent='Palantir Tech';">
+          <div>
+            <div class="s8-card-top-row">
+              <div>
+                <div class="s8-card-ticker">PLTR</div>
+                <div class="s8-card-company">Palantir Tech</div>
+              </div>
+              <span class="s8-card-badge s8-badge-overbought">Overbought</span>
+            </div>
+            <div class="s8-card-price-row">
+              <span class="s8-card-price">$35.40</span>
+              <span class="s8-card-change-up">+5.2%</span>
+            </div>
+          </div>
+          <div class="s8-card-bottom">
+            <div class="s8-card-link">
+              View indicator details <span class="ms-icon" style="font-size:14px">arrow_forward</span>
+            </div>
+            <button class="s8-card-icon-btn" onclick="event.stopPropagation(); showSitePopup(); return false;">
+              <span class="ms-icon">stethoscope</span>
+            </button>
+          </div>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Indicators / About the Data -->
+  <section class="s8-section js-reveal">
+    <h3 class="s8-section-title">About the Data</h3>
+    <div class="s8-indicator-grid">
+      <div class="s8-indicator-card">
+        <h4>RSI</h4>
+        <p>Measures recent price change magnitude to identify overbought or oversold conditions.</p>
+      </div>
+      <div class="s8-indicator-card">
+        <h4>MACD</h4>
+        <p>Identifies trend strength and direction through moving average convergence and divergence.</p>
+      </div>
+      <div class="s8-indicator-card">
+        <h4>Support / Resistance</h4>
+        <p>Key price levels where buying or selling pressure historically emerged for reference.</p>
+      </div>
+      <div class="s8-indicator-card">
+        <h4>Institutional Flow</h4>
+        <p>Net inflow and outflow trends of large investors, reflecting positioning shifts.</p>
+      </div>
+      <div class="s8-indicator-card">
+        <h4>Volume Anomaly</h4>
+        <p>Alerts for unusual trading volume spikes versus historical averages.</p>
+      </div>
+      <div class="s8-indicator-card">
+        <h4>Volatility</h4>
+        <p>Price range analysis based on Bollinger Bands for risk context.</p>
+      </div>
+    </div>
+    <p class="s8-indicator-note">Data is for educational reference only, not investment advice.</p>
+  </section>
+
+  <!-- Education FAQ -->
+  <section class="s8-section js-reveal">
+    <h3 class="s8-section-title">Understanding Indicators</h3>
+    <div class="s8-faq-list">
+      <details class="s8-faq-item">
+        <summary>
+          How to use RSI?
+          <span class="ms-icon">expand_more</span>
+        </summary>
+        <p>RSI above 70 may suggest overbought conditions; below 30 may suggest oversold conditions. These thresholds are commonly used for educational context, not trading signals.</p>
+      </details>
+      <details class="s8-faq-item">
+        <summary>
+          What is a MACD Golden Cross?
+          <span class="ms-icon">expand_more</span>
+        </summary>
+        <p>A Golden Cross occurs when the MACD line crosses above the signal line, which some analysts interpret as a potential trend shift.</p>
+      </details>
+      <details class="s8-faq-item">
+        <summary>
+          Are institutional flows important?
+          <span class="ms-icon">expand_more</span>
+        </summary>
+        <p>Institutional flows can reflect large-scale positioning changes, providing context about how major market participants are allocating capital.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  <section class="s8-social-section js-reveal">
+    <div class="s8-social-title">Used by over 500,000 traders</div>
+    <div class="s8-testimonials">
+      <div class="s8-testimonial">
+        <p>"Extremely useful tool for understanding market data." - Michael</p>
+      </div>
+      <div class="s8-testimonial">
+        <p>"Essential for my daily technical overview." - Sarah</p>
+      </div>
+      <div class="s8-testimonial s8-hidden-mobile">
+        <p>"I like the objective data presentation." - David</p>
+      </div>
+    </div>
+    <div class="s8-ratings">
+      <span class="ms-icon">star</span>
+      <span class="ms-icon">star</span>
+      <span class="ms-icon">star</span>
+      <span class="ms-icon">star</span>
+      <span class="ms-icon">star_half</span>
+      <span class="s8-ratings-text">4.7/5 based on 12,384 reviews</span>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="s8-cta-section js-reveal">
+    <h3 class="s8-cta-title">Daily Technical Overview</h3>
+    <p class="s8-cta-desc">Concise technical summaries delivered 3x weekly. Free. Unsubscribe anytime.</p>
+    <div class="s8-cta-form">
+      <button class="s8-cta-btn" type="button" onclick="showSitePopup(); return false;">
+        Subscribe Free
+      </button>
+    </div>
+    <p class="s8-cta-note">Your email address will not be shared.</p>
+  </section>
+
+</main>
+
+<!-- ================================================================
+     Footer
+     ================================================================ -->
+<footer class="s8-footer">
+  <div class="s8-footer-brand">StockLens</div>
+  <p class="s8-footer-text">
+    StockLens is an educational stock diagnosis reference tool. All data presented is for informational and educational purposes only. Stock investing involves risk. Past performance is not indicative of future results.
+  </p>
+  <div class="s8-footer-links">
+    <a href="#" id="s8OpenDisclaimer">Risk Disclosure</a>
+    <a href="#" id="s8OpenPrivacy">Privacy Policy</a>
+    <a href="#" id="s8OpenDisclaimer2">Terms of Service</a>
+    <a href="#" onclick="showSitePopup(); return false;">Contact Us</a>
+  </div>
+</footer>
+
+<!-- ================================================================
+     Stock Detail Modal
+     ================================================================ -->
+<div class="s8-modal-overlay" id="s8Modal">
+  <div class="s8-modal-content">
+    <div class="s8-modal-header">
+      <div class="s8-modal-header-left">
+        <h3 id="s8ModalTicker">NVDA</h3>
+        <p id="s8ModalCompany">NVIDIA Corp</p>
+      </div>
+      <div class="s8-modal-header-actions">
+        <button class="s8-modal-diag-btn" onclick="showSitePopup(); return false;">
+          <span class="ms-icon" style="font-size:16px">stethoscope</span>
+          AI Diagnosis
+        </button>
+        <button class="s8-modal-close-btn" onclick="document.getElementById('s8Modal').classList.remove('open')">
+          <span class="ms-icon">close</span>
+        </button>
+      </div>
+    </div>
+    <div class="s8-modal-body">
+      <table class="s8-modal-table">
+        <tbody>
+          <tr>
+            <td>RSI</td>
+            <td class="s8-cell-up">42 Neutral</td>
+          </tr>
+          <tr>
+            <td>MACD</td>
+            <td>Signal Crossover</td>
+          </tr>
+          <tr>
+            <td>Support</td>
+            <td>$120.00</td>
+          </tr>
+          <tr>
+            <td>Resistance</td>
+            <td>$135.00</td>
+          </tr>
+          <tr>
+            <td>Institutional Flow</td>
+            <td class="s8-cell-up">+$50M</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="s8-modal-note">
+        <span class="ms-icon">info</span>
+        <p>This data is a demonstration of technical indicators and is not a recommendation to buy or sell.</p>
+      </div>
+    </div>
+    <div class="s8-modal-footer">
+      <button class="s8-modal-close-full" onclick="document.getElementById('s8Modal').classList.remove('open')">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     Privacy Policy Dialog
+     ================================================================ -->
+<dialog class="s8-dialog" id="s8DialogPrivacy" aria-labelledby="s8PrivacyTitle">
+  <div class="s8-dialog-head">
+    <div class="s8-dialog-title" id="s8PrivacyTitle">Privacy Policy</div>
+    <button class="s8-dialog-close" data-s8-close-privacy>Close</button>
+  </div>
+  <div class="s8-dialog-body">
+    <h2>1. Information We Collect</h2>
+    <p>We collect information you provide directly, such as contact details and messages. We also receive technical information sent by your browser, including IP address and device information.</p>
+    <h2>2. How We Use Information</h2>
+    <p>We use your information to provide the Service, operate and secure the website, communicate with you, and comply with legal obligations.</p>
+    <h2>3. Data Sharing</h2>
+    <p>We do not sell your personal information. We may share limited information with service providers under confidentiality obligations.</p>
+    <h2>4. Your Rights</h2>
+    <p>You may have rights to access, correct, or delete your personal information, subject to legal limitations.</p>
+    <h2>5. Contact</h2>
+    <p>If you have questions about this Privacy Policy, contact us at privacy@stocklens.com.</p>
+  </div>
+</dialog>
+
+<!-- ================================================================
+     Terms / Disclaimer Dialog
+     ================================================================ -->
+<dialog class="s8-dialog" id="s8DialogDisclaimer" aria-labelledby="s8DiscTitle">
+  <div class="s8-dialog-head">
+    <div class="s8-dialog-title" id="s8DiscTitle">Terms of Service &amp; Disclaimer</div>
+    <button class="s8-dialog-close" data-s8-close-disclaimer>Close</button>
+  </div>
+  <div class="s8-dialog-body">
+    <h2>1. Educational Purposes Only</h2>
+    <p>All content on this website is for general informational and educational purposes only. Nothing on this site constitutes personalized financial, investment, or trading advice.</p>
+    <h2>2. No Guarantees</h2>
+    <p>Past performance is not a reliable indicator of future results. We make no performance, profit, or outcome guarantees of any kind.</p>
+    <h2>3. Independent Decisions</h2>
+    <p>You should conduct your own independent research and consult with a qualified professional before making any investment decision.</p>
+    <h2>4. No Client Relationship</h2>
+    <p>Use of this website does not create any advisory, fiduciary, or client relationship between you and StockLens.</p>
+    <h2>5. Risk Acknowledgment</h2>
+    <p>Stock investing involves substantial risk of loss and is not suitable for all investors. You should only invest capital you can afford to lose.</p>
+    <h2>6. Contact</h2>
+    <p>If you have questions about these terms, contact us at legal@stocklens.com.</p>
+  </div>
+</dialog>
+
+<!-- ================================================================
+     Scroll Reveal JS
+     ================================================================ -->
+<script>
+(function(){
+  var items = document.querySelectorAll('.js-reveal');
+  if (!('IntersectionObserver' in window) || !items.length) {
+    for (var i = 0; i < items.length; i++) { items[i].classList.add('revealed'); }
+    return;
+  }
+  var observer = new IntersectionObserver(function(entries) {
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].isIntersecting) {
+        entries[i].target.classList.add('revealed');
+        observer.unobserve(entries[i].target);
+      }
+    }
+  }, { threshold: 0.18 });
+  for (var j = 0; j < items.length; j++) { observer.observe(items[j]); }
+})();
+</script>
+
+<!-- ================================================================
+     Policy & Disclaimer Dialog Logic
+     ================================================================ -->
+<script>
+(function(){
+  var $ = function(s) { return document.querySelector(s); };
+  var mPriv = $('#s8DialogPrivacy');
+  var mDisc = $('#s8DialogDisclaimer');
+  var closePriv = mPriv ? mPriv.querySelector('[data-s8-close-privacy]') : null;
+  var closeDisc = mDisc ? mDisc.querySelector('[data-s8-close-disclaimer]') : null;
+
+  function openDialog(modal) {
+    if (!modal) return;
+    if (modal.showModal) {
+      modal.showModal();
+    } else {
+      modal.setAttribute('open', 'open');
+    }
+    var btn = modal.querySelector('button');
+    if (btn) btn.focus();
+  }
+
+  function closeDialog(modal) {
+    if (!modal) return;
+    if (modal.close) {
+      modal.close();
+    } else {
+      modal.removeAttribute('open');
+    }
+  }
+
+  var openPrivacy = $('#s8OpenPrivacy');
+  var openDisclaimer = $('#s8OpenDisclaimer');
+  var openDisclaimer2 = $('#s8OpenDisclaimer2');
+
+  if (openPrivacy) {
+    openPrivacy.addEventListener('click', function(e) { e.preventDefault(); openDialog(mPriv); });
+  }
+  if (openDisclaimer) {
+    openDisclaimer.addEventListener('click', function(e) { e.preventDefault(); openDialog(mDisc); });
+  }
+  if (openDisclaimer2) {
+    openDisclaimer2.addEventListener('click', function(e) { e.preventDefault(); openDialog(mDisc); });
+  }
+  if (closePriv) {
+    closePriv.addEventListener('click', function() { closeDialog(mPriv); });
+  }
+  if (closeDisc) {
+    closeDisc.addEventListener('click', function() { closeDialog(mDisc); });
+  }
+
+  [mPriv, mDisc].forEach(function(m) {
+    if (!m) return;
+    m.addEventListener('click', function(e) {
+      var r = m.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) {
+        closeDialog(m);
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

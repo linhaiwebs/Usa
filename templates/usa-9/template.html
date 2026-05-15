@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Market Lens — Technical Stock Diagnosis Tool</title>
+  <meta name="description" content="Market Lens is an educational stock diagnosis tool. Learn how RSI, MACD, Bollinger Bands and other technical indicators work with simulated real-world examples."/>
+  <meta name="robots" content="index,follow"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <style>
+    /* ========== CSS Custom Properties ========== */
+    :root {
+      --primary: #24389c;
+      --primary-container: #3f51b5;
+      --primary-fixed: #dee0ff;
+      --primary-fixed-dim: #bac3ff;
+      --secondary: #4858ab;
+      --secondary-container: #96a5ff;
+      --secondary-fixed: #dee0ff;
+      --secondary-fixed-dim: #bac3ff;
+      --background: #f8f9fa;
+      --surface: #f8f9fa;
+      --surface-bright: #f8f9fa;
+      --surface-dim: #d9dadb;
+      --surface-container-lowest: #ffffff;
+      --surface-container-low: #f3f4f5;
+      --surface-container: #edeeef;
+      --surface-container-high: #e7e8e9;
+      --surface-container-highest: #e1e3e4;
+      --surface-variant: #e1e3e4;
+      --surface-tint: #4355b9;
+      --on-surface: #191c1d;
+      --on-surface-variant: #454652;
+      --on-background: #191c1d;
+      --on-primary: #ffffff;
+      --on-primary-container: #cacfff;
+      --on-primary-fixed: #00105c;
+      --on-primary-fixed-variant: #293ca0;
+      --on-secondary: #ffffff;
+      --on-secondary-container: #27378a;
+      --on-secondary-fixed: #00105b;
+      --on-secondary-fixed-variant: #2f3f92;
+      --on-tertiary: #ffffff;
+      --on-tertiary-fixed: #181b24;
+      --on-tertiary-fixed-variant: #434750;
+      --on-tertiary-container: #cfd2dd;
+      --tertiary: #3f434c;
+      --tertiary-container: #575a64;
+      --tertiary-fixed: #e0e2ee;
+      --tertiary-fixed-dim: #c4c6d2;
+      --error: #ba1a1a;
+      --error-container: #ffdad6;
+      --on-error: #ffffff;
+      --on-error-container: #93000a;
+      --outline: #757684;
+      --outline-variant: #c5c5d4;
+      --inverse-surface: #2e3132;
+      --inverse-primary: #bac3ff;
+      --inverse-on-surface: #f0f1f2;
+      --green-text: #0d652d;
+      --green-bg: #e6f4ea;
+      --red-text: #b3261e;
+      --red-bg: #fce8e8;
+      --radius-sm: 8px;
+      --radius: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --radius-2xl: 40px;
+      --radius-full: 9999px;
+      --margin-mobile: 16px;
+      --margin-desktop: 48px;
+      --section-gap: 96px;
+    }
+
+    /* ========== Reset & Base ========== */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{
+      font-family:"Work Sans",system-ui,-apple-system,sans-serif;
+      background:var(--background);
+      color:var(--on-background);
+      font-size:16px;
+      line-height:24px;
+      font-weight:400;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:max(884px,100dvh);
+    }
+
+    /* ========== Material Icons ========== */
+    .ms-icon{
+      font-family:"Material Symbols Outlined";
+      font-weight:normal;
+      font-style:normal;
+      display:inline-block;
+      line-height:1;
+      text-transform:none;
+      letter-spacing:normal;
+      word-wrap:normal;
+      white-space:nowrap;
+      direction:ltr;
+    }
+
+    /* ========== Hide Scrollbar ========== */
+    .hide-scrollbar::-webkit-scrollbar{display:none;}
+    .hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+
+    /* ========== TopBar ========== */
+    .topbar{
+      position:fixed;top:0;left:0;right:0;z-index:50;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 var(--margin-mobile);height:56px;
+      background:var(--surface);
+      box-shadow:0 1px 3px rgba(0,0,0,.08);
+    }
+    .topbar-left{display:flex;align-items:center;gap:8px;}
+    .topbar-brand{font-size:20px;line-height:28px;font-weight:700;color:var(--primary);}
+    .topbar-btn{
+      display:flex;align-items:center;justify-content:center;
+      width:40px;height:40px;border-radius:var(--radius-full);
+      border:none;background:none;cursor:pointer;
+      color:var(--on-surface-variant);
+      font-size:24px;transition:background .2s;
+    }
+    .topbar-btn:hover{background:var(--surface-container-high);}
+
+    /* ========== Compliance Banner ========== */
+    .compliance-banner{
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      background:var(--surface-variant);color:var(--on-surface-variant);
+      padding:8px var(--margin-mobile);
+      box-shadow:0 1px 2px rgba(0,0,0,.04);
+      position:relative;z-index:40;
+      font-size:14px;line-height:20px;font-weight:600;
+    }
+    .compliance-banner .ms-icon{font-size:16px;}
+
+    /* ========== Main Wrapper ========== */
+    .main-wrap{
+      display:flex;flex-direction:column;align-items:center;
+      padding-top:56px; /* topbar height */
+    }
+
+    /* ========== Hero ========== */
+    .hero{
+      width:100%;padding:32px var(--margin-mobile);
+      display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px;
+    }
+    .hero-icon{
+      width:96px;height:96px;
+      background:var(--primary-container);color:var(--on-primary-container);
+      border-radius:var(--radius-2xl);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 16px -4px rgba(63,81,181,.2);
+    }
+    .hero-icon .ms-icon{font-size:56px;font-variation-settings:'FILL' 1;}
+    .hero-content{display:flex;flex-direction:column;gap:12px;align-items:center;max-width:340px;}
+    .hero h1{
+      font-size:36px;line-height:44px;font-weight:700;color:var(--on-surface);
+      letter-spacing:-0.02em;
+    }
+    .hero p{
+      font-size:18px;line-height:28px;font-weight:400;color:var(--on-surface-variant);
+    }
+    .hero-cta{
+      margin-top:8px;
+      width:100%;max-width:320px;height:56px;
+      background:var(--primary-container);color:var(--on-primary-container);
+      border:none;border-radius:30px;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      font-family:"Work Sans",system-ui,sans-serif;
+      font-size:16px;line-height:24px;font-weight:600;
+      box-shadow:0 4px 12px rgba(36,56,156,.2);
+      cursor:pointer;transition:transform .15s;
+    }
+    .hero-cta:hover{filter:brightness(1.05);}
+    .hero-cta:active{transform:scale(.95);}
+    .hero-cta .ms-icon{font-size:20px;}
+
+    /* ========== Section ========== */
+    .section{padding:32px var(--margin-mobile);width:100%;}
+
+    /* ========== Market Overview ========== */
+    .market-overview{
+      width:100%;padding:24px 0;
+      background:var(--surface-container-low);
+      border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+    }
+    .market-header{
+      padding:0 var(--margin-mobile);margin-bottom:16px;
+      display:flex;align-items:flex-end;justify-content:space-between;
+    }
+    .market-header h2{
+      font-size:20px;line-height:28px;font-weight:600;color:var(--on-surface);
+      display:flex;align-items:center;gap:8px;
+    }
+    .market-header h2 .ms-icon{color:var(--primary);}
+    .market-scroll{
+      display:flex;overflow-x:auto;gap:16px;
+      padding:0 var(--margin-mobile) 16px;
+      scroll-snap-type:x mandatory;
+    }
+    .market-card{
+      min-width:150px;flex-shrink:0;scroll-snap-align:start;
+      background:var(--surface-container-lowest);
+      border-radius:var(--radius-lg);
+      padding:16px;
+      border:1px solid var(--surface-container-highest);
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;flex-direction:column;justify-content:space-between;
+    }
+    .market-card .m-label{font-size:14px;line-height:20px;font-weight:600;color:var(--on-surface-variant);margin-bottom:4px;}
+    .market-card .m-value{font-size:24px;line-height:32px;font-weight:600;color:var(--on-surface);margin-bottom:8px;}
+    .market-card .m-change{
+      font-size:14px;line-height:20px;font-weight:500;
+      padding:2px 8px;border-radius:6px;
+      align-self:flex-start;
+    }
+    .market-card .m-change.up{color:var(--green-text);background:var(--green-bg);}
+    .market-card .m-change.down{color:var(--red-text);background:var(--red-bg);}
+    .market-card .m-change.neutral{color:var(--outline);background:var(--surface-variant);}
+    .market-note{
+      padding:0 var(--margin-mobile);margin-top:4px;
+      display:flex;align-items:center;gap:4px;
+      color:var(--tertiary-fixed-dim);
+      font-size:14px;line-height:20px;
+    }
+    .market-note .ms-icon{font-size:14px;color:var(--on-surface-variant);}
+
+    /* ========== Stocks Grid ========== */
+    .stocks-grid-section{background:var(--surface);}
+    .section-title{
+      font-size:20px;line-height:28px;font-weight:600;color:var(--on-surface);margin-bottom:24px;
+    }
+    .stocks-grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:16px;
+    }
+    .stock-card{
+      background:var(--surface-container-lowest);
+      border-radius:var(--radius-lg);
+      padding:16px;
+      border:1px solid var(--surface-container-high);
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;flex-direction:column;align-items:center;gap:12px;
+      cursor:pointer;transition:transform .15s;
+    }
+    .stock-card:active{transform:scale(.95);}
+    .stock-avatar{
+      width:48px;height:48px;border-radius:var(--radius-full);
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;line-height:28px;font-weight:700;
+    }
+    .stock-avatar.nvda{background:rgba(118,185,0,.1);color:#76b900;}
+    .stock-avatar.tsla{background:rgba(227,25,55,.1);color:#e31937;}
+    .stock-avatar.aapl{background:rgba(25,28,29,.1);color:var(--on-surface);}
+    .stock-avatar.amd{background:rgba(237,28,36,.1);color:#ed1c24;}
+    .stock-avatar.meta{background:rgba(6,104,225,.1);color:#0668e1;}
+    .stock-avatar.msft{background:rgba(0,164,239,.1);color:#00a4ef;}
+    .stock-info{text-align:center;}
+    .stock-info .ticker{font-size:14px;line-height:20px;font-weight:600;color:var(--on-surface);}
+    .stock-info .name{font-size:14px;line-height:20px;font-weight:400;color:var(--on-surface-variant);}
+    .stock-change-badge{
+      font-size:14px;line-height:20px;padding:4px 12px;border-radius:var(--radius-full);
+    }
+    .stock-change-badge.up{color:var(--green-text);background:var(--green-bg);}
+    .stock-change-badge.down{color:var(--red-text);background:var(--red-bg);}
+
+    /* ========== Learning Corner ========== */
+    .learning-corner{
+      padding:32px var(--margin-mobile);
+      background:var(--surface-container-low);
+      border-radius:var(--radius-xl);
+      margin:16px 8px;
+      max-width:calc(100% - 16px);
+      width:100%;
+    }
+    .learning-corner .section-title{
+      display:flex;align-items:center;gap:8px;
+    }
+    .learning-corner .section-title .ms-icon{color:var(--primary);}
+    .accordion-list{display:flex;flex-direction:column;gap:12px;}
+    .accordion-item{
+      background:var(--surface-container-lowest);
+      border-radius:20px;border:1px solid var(--surface-container-highest);
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      overflow:hidden;
+    }
+    .accordion-header{
+      padding:16px;display:flex;align-items:center;justify-content:space-between;
+      font-size:16px;line-height:24px;font-weight:600;color:var(--on-surface);
+    }
+    .accordion-header .ms-icon{color:var(--outline);}
+    .accordion-body{
+      padding:0 16px 16px;
+      border-top:1px solid var(--surface-container-high);
+    }
+    .accordion-body p{
+      font-size:14px;line-height:20px;color:var(--on-surface-variant);
+      margin-top:12px;margin-bottom:8px;
+    }
+    .accordion-formula{
+      background:var(--surface-container-low);
+      padding:12px;border-radius:var(--radius-sm);
+      font-size:12px;line-height:20px;color:var(--on-surface);
+      font-family:monospace;
+      margin-bottom:12px;
+    }
+    .accordion-disclaimer{
+      display:flex;align-items:center;gap:4px;color:var(--tertiary);
+      font-size:12px;line-height:20px;
+    }
+    .accordion-disclaimer .ms-icon{font-size:14px;}
+
+    /* ========== Subscription CTA ========== */
+    .subscribe-section{padding:32px var(--margin-mobile);margin-bottom:16px;}
+    .subscribe-card{
+      background:var(--secondary-container);color:var(--on-secondary-container);
+      border-radius:var(--radius-xl);
+      padding:24px;text-align:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+      position:relative;overflow:hidden;
+    }
+    .subscribe-card::before{
+      content:'';position:absolute;
+      top:-40px;right:-40px;
+      width:128px;height:128px;
+      background:var(--primary-container);opacity:.2;
+      border-radius:var(--radius-full);
+      filter:blur(40px);
+    }
+    .subscribe-card::after{
+      content:'';position:absolute;
+      bottom:-40px;left:-40px;
+      width:128px;height:128px;
+      background:var(--primary-container);opacity:.2;
+      border-radius:var(--radius-full);
+      filter:blur(40px);
+    }
+    .subscribe-card *{position:relative;z-index:10;}
+    .subscribe-card h2{
+      font-size:20px;line-height:28px;font-weight:600;margin-bottom:8px;
+    }
+    .subscribe-card p{
+      font-size:14px;line-height:20px;opacity:.9;margin-bottom:24px;
+      max-width:260px;margin-left:auto;margin-right:auto;
+    }
+    .subscribe-cta{
+      width:100%;max-width:280px;height:56px;
+      background:var(--primary-container);color:var(--on-primary-container);
+      border:none;border-radius:var(--radius-full);
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      font-family:"Work Sans",system-ui,sans-serif;
+      font-size:16px;line-height:24px;font-weight:600;
+      box-shadow:0 4px 12px rgba(36,56,156,.2);
+      cursor:pointer;transition:transform .15s;
+      margin:0 auto;
+    }
+    .subscribe-cta:hover{filter:brightness(1.05);}
+    .subscribe-cta:active{transform:scale(.95);}
+    .subscribe-cta .ms-icon{font-size:20px;}
+
+    /* ========== Footer ========== */
+    .site-footer{
+      width:100%;padding:48px var(--margin-mobile) 112px;
+      background:var(--surface-container-high);
+      display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+    }
+    .site-footer .footer-brand{
+      font-size:14px;line-height:20px;font-weight:700;color:var(--on-surface);
+      margin-bottom:4px;
+    }
+    .footer-links{
+      display:flex;flex-direction:column;gap:8px;margin-bottom:16px;
+    }
+    .footer-links a{
+      font-size:14px;line-height:20px;color:var(--on-surface-variant);
+      text-decoration:none;opacity:.8;transition:opacity .2s,color .2s;
+    }
+    .footer-links a:hover{color:var(--primary);opacity:1;}
+    .footer-disclosure{
+      font-size:12px;line-height:18px;color:var(--on-surface-variant);
+      background:rgba(225,227,228,.5);
+      padding:16px;border-radius:12px;text-align:left;
+      max-width:420px;
+    }
+    .footer-disclosure strong{display:block;margin-bottom:4px;}
+    .footer-copy{
+      font-size:14px;line-height:20px;color:var(--on-surface);opacity:.7;
+    }
+
+    /* ========== Scroll Reveal ========== */
+    .js-reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+    .js-reveal.revealed{opacity:1;transform:translateY(0);}
+
+    /* ========== Demo Modal ========== */
+    #demo-modal{
+      display:none; /* hidden by default */
+      position:fixed;inset:0;z-index:60;
+      background:rgba(25,28,29,.4);
+      backdrop-filter:blur(3px);
+      -webkit-backdrop-filter:blur(3px);
+      align-items:center;justify-content:center;
+      padding:16px;
+    }
+    #demo-modal.open{display:flex;}
+    .demo-modal-dialog{
+      background:var(--surface-container-lowest);
+      width:100%;max-width:360px;
+      border-radius:var(--radius-xl);
+      box-shadow:0 12px 48px rgba(0,0,0,.15);
+      display:flex;flex-direction:column;
+      overflow:hidden;
+      animation:demoFadeIn .2s ease-out;
+    }
+    @keyframes demoFadeIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+    .demo-modal-head{
+      padding:20px 20px 12px;
+      border-bottom:1px solid var(--surface-container-highest);
+      display:flex;align-items:flex-start;justify-content:space-between;
+      background:rgba(243,244,245,.3);
+    }
+    .demo-modal-head .dm-stock-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+    .dm-stock-icon{
+      width:32px;height:32px;
+      background:var(--primary-container);color:var(--on-primary-container);
+      border-radius:var(--radius-full);
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:700;
+    }
+    .demo-modal-head h3{font-size:20px;line-height:28px;font-weight:600;color:var(--on-surface);}
+    .demo-modal-head .dm-sub{
+      font-size:14px;line-height:20px;color:var(--on-surface-variant);
+    }
+    .dm-close-btn{
+      border:none;background:var(--surface-container);
+      color:var(--outline);font-size:20px;
+      width:32px;height:32px;border-radius:var(--radius-full);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:color .15s;
+      flex-shrink:0;
+    }
+    .dm-close-btn:hover{color:var(--on-surface);}
+    .demo-modal-body{padding:20px;display:flex;flex-direction:column;gap:20px;}
+    .dm-rsi-label{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;}
+    .dm-rsi-label span:first-child{font-size:14px;line-height:20px;font-weight:600;color:var(--on-surface);}
+    .dm-rsi-value{font-size:24px;line-height:32px;font-weight:700;color:var(--primary);}
+    .dm-rsi-bar{
+      height:12px;width:100%;background:var(--surface-container-highest);
+      border-radius:var(--radius-full);overflow:hidden;position:relative;
+    }
+    .dm-rsi-bar .dm-rsi-fill{height:100%;background:var(--primary);border-radius:var(--radius-full);}
+    .dm-rsi-bar .dm-rsi-threshold{
+      position:absolute;top:0;bottom:0;width:1px;background:rgba(25,28,29,.3);
+    }
+    .dm-rsi-marks{
+      display:flex;justify-content:space-between;margin-top:4px;padding:0 4px;
+      font-size:10px;color:var(--outline);
+    }
+    .dm-macd-card{
+      background:var(--surface-container);padding:16px;
+      border-radius:20px;border:1px solid var(--surface-variant);
+    }
+    .dm-macd-card .dm-macd-label{
+      font-size:14px;line-height:20px;font-weight:600;color:var(--on-surface);
+      margin-bottom:12px;display:flex;align-items:center;gap:4px;
+    }
+    .dm-macd-chart{
+      height:48px;width:100%;
+      border-bottom:1px solid var(--outline-variant);
+      display:flex;align-items:flex-end;justify-content:space-around;padding-bottom:2px;
+      position:relative;
+    }
+    .dm-macd-bar{width:12px;border-radius:2px 2px 0 0;}
+    .dm-macd-chart svg{position:absolute;inset:0;width:100%;height:100%;}
+    .dm-macd-note{
+      font-size:14px;line-height:20px;color:var(--on-surface-variant);
+      margin-top:8px;text-align:center;
+    }
+    .demo-modal-foot{padding:20px;padding-top:12px;background:var(--surface-container-lowest);}
+    .dm-warning{
+      display:flex;align-items:flex-start;gap:8px;
+      background:var(--surface);padding:12px;border-radius:12px;
+      margin-bottom:16px;border:1px solid var(--surface-variant);
+    }
+    .dm-warning .ms-icon{font-size:16px;margin-top:2px;color:var(--outline);flex-shrink:0;}
+    .dm-warning span{
+      font-size:12px;line-height:1.35;color:var(--on-surface-variant);
+    }
+    .dm-actions{display:flex;gap:12px;}
+    .dm-btn-outline{
+      flex:1;height:48px;
+      border:1px solid var(--outline-variant);border-radius:var(--radius-full);
+      background:transparent;color:var(--on-surface);
+      font-family:"Work Sans",system-ui,sans-serif;
+      font-size:16px;line-height:24px;font-weight:600;
+      cursor:pointer;transition:background .15s;
+    }
+    .dm-btn-outline:hover{background:var(--surface-container);}
+    .dm-btn-primary{
+      flex:1;height:48px;
+      border:none;border-radius:var(--radius-full);
+      background:var(--primary-container);color:var(--on-primary-container);
+      font-family:"Work Sans",system-ui,sans-serif;
+      font-size:16px;line-height:24px;font-weight:600;
+      display:flex;align-items:center;justify-content:center;gap:4px;
+      cursor:pointer;transition:transform .15s;
+    }
+    .dm-btn-primary:hover{filter:brightness(1.05);}
+    .dm-btn-primary:active{transform:scale(.95);}
+    .dm-btn-primary .ms-icon{font-size:18px;}
+
+    /* ========== Privacy / Terms Modals (generic dialog) ========== */
+    dialog.generic-modal{
+      width:min(920px,92vw);border:none;padding:0;border-radius:var(--radius);
+      overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4);
+      background:var(--surface-container-lowest);color:var(--on-surface);
+    }
+    dialog.generic-modal::backdrop{
+      background:rgba(0,0,0,.45);backdrop-filter:blur(3px);
+      -webkit-backdrop-filter:blur(3px);
+    }
+    .generic-modal .modal-head{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px 20px;border-bottom:1px solid var(--surface-container-highest);
+      background:var(--surface-container-low);
+    }
+    .generic-modal .modal-title{font-weight:700;font-size:16px;color:var(--on-surface);}
+    .generic-modal .modal-close{
+      appearance:none;border:1px solid var(--outline-variant);
+      background:var(--surface-container-lowest);color:var(--on-surface);
+      padding:7px 14px;border-radius:var(--radius-full);
+      font-weight:600;cursor:pointer;font-size:13px;
+      font-family:"Work Sans",system-ui,sans-serif;
+    }
+    .generic-modal .modal-close:hover{background:var(--surface-container);}
+    .generic-modal .modal-body{
+      padding:20px;max-height:min(72vh,840px);overflow:auto;
+      color:var(--on-surface);font-size:14px;line-height:1.7;
+    }
+    .generic-modal .modal-body h2{
+      font-size:16px;font-weight:600;margin-bottom:6px;margin-top:16px;color:var(--primary);
+    }
+    .generic-modal .modal-body h2:first-child{margin-top:0;}
+    .generic-modal .modal-body p{margin-bottom:12px;color:var(--on-surface-variant);}
+
+    /* ========== Responsive ========== */
+    @media(min-width:600px){
+      .stocks-grid{grid-template-columns:repeat(3,1fr);}
+      .hero h1{font-size:48px;line-height:56px;}
+    }
+    @media(min-width:900px){
+      .section{padding:48px var(--margin-desktop);}
+      .hero{padding:48px var(--margin-desktop);}
+      .market-overview{padding:32px 0;}
+      .site-footer{padding:48px var(--margin-desktop) 48px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== TopBar ========== -->
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="ms-icon" style="color:var(--primary);">account_balance</span>
+    <span class="topbar-brand">Market Lens</span>
+  </div>
+  <button class="topbar-btn ms-icon" aria-label="Help">help_outline</button>
+</header>
+
+<!-- ========== Compliance Banner ========== -->
+<div class="compliance-banner">
+  <span class="ms-icon">content_paste</span>
+  <span>Educational Tool &middot; All data is simulated for demonstration</span>
+</div>
+
+<!-- ========== Main Content ========== -->
+<main class="main-wrap">
+
+  <!-- Section 1: Hero -->
+  <section class="hero js-reveal">
+    <div class="hero-icon">
+      <span class="ms-icon">casino</span>
+    </div>
+    <div class="hero-content">
+      <h1>Stock Diagnosis Tool</h1>
+      <p>Click the button below to randomly select a popular stock and view a simulated technical indicator snapshot. For educational purposes only.</p>
+    </div>
+    <button class="hero-cta" onclick="showSitePopup(); return false;">
+      <span class="ms-icon">casino</span>
+      Random Stock Diagnosis &rarr;
+    </button>
+  </section>
+
+  <!-- Section 2: Market Overview -->
+  <section class="market-overview js-reveal">
+    <div class="market-header">
+      <h2><span class="ms-icon">monitoring</span> Market At-A-Glance <small style="font-size:12px;font-weight:400;color:var(--on-surface-variant);">(Simulated Data)</small></h2>
+    </div>
+    <div class="market-scroll hide-scrollbar">
+      <div class="market-card">
+        <div class="m-label">S&P 500</div>
+        <div class="m-value">5,204.31</div>
+        <div class="m-change up">+0.42%</div>
+      </div>
+      <div class="market-card">
+        <div class="m-label">Nasdaq</div>
+        <div class="m-value">16,274.9</div>
+        <div class="m-change up">+0.87%</div>
+      </div>
+      <div class="market-card">
+        <div class="m-label">VIX</div>
+        <div class="m-value">15.20</div>
+        <div class="m-change down">-2.14%</div>
+      </div>
+      <div class="market-card">
+        <div class="m-label">Advance/Decline</div>
+        <div class="m-value">1.8 : 1</div>
+        <div class="m-change neutral">Neutral</div>
+      </div>
+    </div>
+    <div class="market-note">
+      <span class="ms-icon">info</span>
+      <span>Simulated market data, for educational display only</span>
+    </div>
+  </section>
+
+  <!-- Section 3: Popular Stocks Grid -->
+  <section class="section stocks-grid-section js-reveal">
+    <h2 class="section-title">Diagnosis Ticker Pool</h2>
+    <div class="stocks-grid">
+      <!-- NVDA -->
+      <div class="stock-card" onclick="showSitePopup(); return false;">
+        <div class="stock-avatar nvda">NV</div>
+        <div class="stock-info">
+          <div class="ticker">NVDA</div>
+          <div class="name">NVIDIA Corp</div>
+        </div>
+        <div class="stock-change-badge up">+2.4%</div>
+      </div>
+      <!-- TSLA -->
+      <div class="stock-card" onclick="showSitePopup(); return false;">
+        <div class="stock-avatar tsla">TS</div>
+        <div class="stock-info">
+          <div class="ticker">TSLA</div>
+          <div class="name">Tesla Inc</div>
+        </div>
+        <div class="stock-change-badge down">-1.2%</div>
+      </div>
+      <!-- AAPL -->
+      <div class="stock-card" onclick="showSitePopup(); return false;">
+        <div class="stock-avatar aapl">AP</div>
+        <div class="stock-info">
+          <div class="ticker">AAPL</div>
+          <div class="name">Apple Inc</div>
+        </div>
+        <div class="stock-change-badge up">+0.8%</div>
+      </div>
+      <!-- AMD -->
+      <div class="stock-card" onclick="showSitePopup(); return false;">
+        <div class="stock-avatar amd">AM</div>
+        <div class="stock-info">
+          <div class="ticker">AMD</div>
+          <div class="name">Adv Micro Dev</div>
+        </div>
+        <div class="stock-change-badge up">+3.1%</div>
+      </div>
+      <!-- META -->
+      <div class="stock-card" onclick="showSitePopup(); return false;">
+        <div class="stock-avatar meta">ME</div>
+        <div class="stock-info">
+          <div class="ticker">META</div>
+          <div class="name">Meta Platforms</div>
+        </div>
+        <div class="stock-change-badge down">-0.5%</div>
+      </div>
+      <!-- MSFT -->
+      <div class="stock-card" onclick="showSitePopup(); return false;">
+        <div class="stock-avatar msft">MS</div>
+        <div class="stock-info">
+          <div class="ticker">MSFT</div>
+          <div class="name">Microsoft Corp</div>
+        </div>
+        <div class="stock-change-badge up">+1.1%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Learning Corner -->
+  <section class="learning-corner js-reveal">
+    <h2 class="section-title"><span class="ms-icon">menu_book</span> Technical Diagnosis Guide</h2>
+    <div class="accordion-list">
+      <!-- RSI (expanded) -->
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <span>RSI (Relative Strength Index)</span>
+          <span class="ms-icon">expand_more</span>
+        </div>
+        <div class="accordion-body">
+          <p>Measures the magnitude of recent price changes to evaluate overbought or oversold conditions in the price of an asset.</p>
+          <div class="accordion-formula">RSI = 100 - [100 / (1 + (Average Gain / Average Loss))]</div>
+          <div class="accordion-disclaimer">
+            <span class="ms-icon">school</span>
+            <span>Educational content, not trading advice</span>
+          </div>
+        </div>
+      </div>
+      <!-- MACD -->
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <span>MACD (Moving Average Convergence Divergence)</span>
+          <span class="ms-icon">chevron_right</span>
+        </div>
+      </div>
+      <!-- Bollinger Bands -->
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <span>Bollinger Bands</span>
+          <span class="ms-icon">chevron_right</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Subscription CTA -->
+  <section class="subscribe-section js-reveal">
+    <div class="subscribe-card">
+      <h2>Weekly Technical Summary</h2>
+      <p>Sent every Friday, covering technical indicator snapshots of major indices. Free subscription.</p>
+      <button class="subscribe-cta" onclick="showSitePopup(); return false;">
+        <span class="ms-icon">notifications</span>
+        Subscribe Now
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ========== Footer ========== -->
+<footer class="site-footer">
+  <div class="footer-brand">Market Lens</div>
+  <div class="footer-links">
+    <a href="#" id="openPrivacy">Privacy Policy</a>
+    <a href="#" id="openDisclaimer">Terms of Service</a>
+  </div>
+  <div class="footer-disclosure">
+    <strong>Risk Disclosure:</strong>
+    The data and charts provided on this platform are for educational and demonstration purposes only. They are not real-time market data and by no means constitute any financial, investment, or trading advice. Investing carries risk; please be cautious when entering the market.
+  </div>
+  <p class="footer-copy">&copy; 2026 Market Lens. Educational use only.</p>
+</footer>
+
+<!-- ========== Demo Modal (Simulated Stock Diagnosis) ========== -->
+<div id="demo-modal">
+  <div class="demo-modal-dialog">
+    <!-- Header -->
+    <div class="demo-modal-head">
+      <div>
+        <div class="dm-stock-row">
+          <div class="dm-stock-icon">NV</div>
+          <h3>NVDA</h3>
+        </div>
+        <div class="dm-sub">NVIDIA Corp &middot; Simulated Indicator Snapshot</div>
+      </div>
+      <button class="dm-close-btn ms-icon" onclick="document.getElementById('demo-modal').classList.remove('open')">close</button>
+    </div>
+    <!-- Body -->
+    <div class="demo-modal-body">
+      <!-- RSI Gauge -->
+      <div>
+        <div class="dm-rsi-label">
+          <span>RSI (14)</span>
+          <span class="dm-rsi-value">68.4</span>
+        </div>
+        <div class="dm-rsi-bar">
+          <div class="dm-rsi-fill" style="width:68.4%;"></div>
+          <div class="dm-rsi-threshold" style="left:30%;"></div>
+          <div class="dm-rsi-threshold" style="left:70%;"></div>
+        </div>
+        <div class="dm-rsi-marks">
+          <span>Oversold &lt; 30</span>
+          <span>Neutral</span>
+          <span>Overbought &gt; 70</span>
+        </div>
+      </div>
+      <!-- MACD -->
+      <div class="dm-macd-card">
+        <div class="dm-macd-label">
+          <span class="ms-icon" style="font-size:18px;">ssid_chart</span> MACD Trend
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:48px;">
+          <div class="dm-macd-chart">
+            <div class="dm-macd-bar" style="height:30%;background:var(--secondary);"></div>
+            <div class="dm-macd-bar" style="height:60%;background:var(--secondary);"></div>
+            <div class="dm-macd-bar" style="height:80%;background:var(--secondary);"></div>
+            <div class="dm-macd-bar" style="height:100%;background:var(--primary);"></div>
+            <div class="dm-macd-bar" style="height:70%;background:var(--primary);"></div>
+            <div class="dm-macd-bar" style="height:40%;background:var(--error);opacity:.7;"></div>
+            <svg style="position:absolute;inset:0;width:100%;height:100%;" preserveAspectRatio="none">
+              <path d="M 10 30 Q 50 10 90 20 T 170 30" fill="transparent" stroke="#ba1a1a" stroke-width="2"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="dm-macd-note">MACD line crossing above signal line (simulated bullish setup)</div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="demo-modal-foot">
+      <div class="dm-warning">
+        <span class="ms-icon">warning</span>
+        <span>This is randomly generated demonstration data and does not represent actual market conditions. Educational demo tool, not investment advice.</span>
+      </div>
+      <div class="dm-actions">
+        <button class="dm-btn-outline" onclick="document.getElementById('demo-modal').classList.remove('open')">Close</button>
+        <button class="dm-btn-primary" onclick="showSitePopup(); return false;">
+          <span class="ms-icon">refresh</span> Try Again
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Privacy Policy Modal ========== -->
+<dialog class="generic-modal" id="modalPrivacy" aria-labelledby="privTitle">
+  <div class="modal-head">
+    <div class="modal-title" id="privTitle">Privacy Policy</div>
+    <button class="modal-close" data-close-privacy>Close &times;</button>
+  </div>
+  <div class="modal-body">
+    <h2>1. Information We Collect</h2>
+    <p>We collect information you provide directly, such as contact details and messages you send through our educational tools. We also receive standard technical information sent by your browser, including IP address, device type, and usage patterns.</p>
+    <h2>2. How We Use Information</h2>
+    <p>We use your information to provide and improve the Service, operate and secure the website, communicate with you, and comply with legal obligations. We do not sell your personal information to third parties.</p>
+    <h2>3. Data Sharing</h2>
+    <p>We may share limited information with service providers under strict confidentiality obligations, solely for the purpose of delivering the Service. We do not share your data with advertisers or data brokers.</p>
+    <h2>4. Your Rights</h2>
+    <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us. We will respond to verified requests within the timeframe required by applicable law.</p>
+  </div>
+</dialog>
+
+<!-- ========== Terms of Service Modal ========== -->
+<dialog class="generic-modal" id="modalDisclaimer" aria-labelledby="discTitle">
+  <div class="modal-head">
+    <div class="modal-title" id="discTitle">Terms of Service</div>
+    <button class="modal-close" data-close-disclaimer>Close &times;</button>
+  </div>
+  <div class="modal-body">
+    <h2>1. Educational Purposes Only</h2>
+    <p>All content, tools, charts, and data provided on this website are for general informational and educational purposes only. Nothing on this site constitutes personalized financial, investment, legal, or tax advice.</p>
+    <h2>2. Simulated Data</h2>
+    <p>Stock price data, indicator values, and market figures displayed on this platform are simulated for demonstration purposes and do not reflect real-time or actual market conditions. Do not rely on this data for trading decisions.</p>
+    <h2>3. No Guarantees</h2>
+    <p>Past performance (whether real or simulated) is not a reliable indicator of future results. We make no performance, profit, or outcome guarantees of any kind.</p>
+    <h2>4. Independent Decisions</h2>
+    <p>You should conduct your own independent research and consult with a qualified financial professional before making any investment decision. Your use of this website is at your own risk.</p>
+    <h2>5. Limitation of Liability</h2>
+    <p>To the fullest extent permitted by law, Market Lens and its operators shall not be liable for any losses or damages arising from your use of or reliance on the information provided through this educational platform.</p>
+  </div>
+</dialog>
+
+<!-- ========== Scripts ========== -->
+
+<!-- Scroll Reveal -->
+<script>
+(function(){
+  var items = document.querySelectorAll('.js-reveal');
+  if(!('IntersectionObserver' in window) || !items.length){
+    for(var i=0;i<items.length;i++){items[i].classList.add('revealed');}
+    return;
+  }
+  var observer = new IntersectionObserver(function(entries){
+    for(var i=0;i<entries.length;i++){
+      if(entries[i].isIntersecting){
+        entries[i].target.classList.add('revealed');
+        observer.unobserve(entries[i].target);
+      }
+    }
+  },{threshold:0.18});
+  for(var i=0;i<items.length;i++){observer.observe(items[i]);}
+})();
+</script>
+
+<!-- Demo Modal Toggle (click any stock card to see it) -->
+<script>
+(function(){
+  var demoModal = document.getElementById('demo-modal');
+  /* Open demo modal when clicking any stock card in the grid */
+  var stockCards = document.querySelectorAll('.stock-card');
+  for(var i=0;i<stockCards.length;i++){
+    stockCards[i].addEventListener('click',function(e){
+      /* Prevent stock card click from also triggering the hero CTA's showSitePopup
+         when the user explicitly clicks the card body (not the embedded button) */
+      demoModal.classList.add('open');
+    });
+  }
+  /* Close demo modal on backdrop click */
+  demoModal.addEventListener('click',function(e){
+    if(e.target === demoModal){
+      demoModal.classList.remove('open');
+    }
+  });
+})();
+</script>
+
+<!-- Privacy / Terms Modal Logic -->
+<script>
+(function(){
+  var $ = function(s){return document.querySelector(s);};
+  var mPriv = $('#modalPrivacy'), mDisc = $('#modalDisclaimer');
+  function open(m){ if(m&&m.showModal) m.showModal(); else if(m) m.setAttribute('open','open'); }
+  function close(m){ if(m&&m.close) m.close(); else if(m) m.removeAttribute('open'); }
+  var openPriv = $('#openPrivacy');
+  var openDisc = $('#openDisclaimer');
+  if(openPriv){openPriv.addEventListener('click',function(e){e.preventDefault();open(mPriv);});}
+  if(openDisc){openDisc.addEventListener('click',function(e){e.preventDefault();open(mDisc);});}
+  var closePrivBtn = mPriv? mPriv.querySelector('[data-close-privacy]') : null;
+  var closeDiscBtn = mDisc? mDisc.querySelector('[data-close-disclaimer]') : null;
+  if(closePrivBtn){closePrivBtn.addEventListener('click',function(){close(mPriv);});}
+  if(closeDiscBtn){closeDiscBtn.addEventListener('click',function(){close(mDisc);});}
+  /* Close on backdrop click */
+  [mPriv,mDisc].forEach(function(m){
+    if(!m) return;
+    m.addEventListener('click',function(e){
+      var r=m.getBoundingClientRect();
+      if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) close(m);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
