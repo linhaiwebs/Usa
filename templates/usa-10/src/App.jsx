@@ -1,14 +1,35 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './index.css'
-
-function openPopup() {
-  if (typeof window !== 'undefined' && typeof window.showSitePopup === 'function') {
-    window.showSitePopup()
-  }
-}
 
 function App() {
   const [activeDot, setActiveDot] = useState(0)
+  const [diagnosing, setDiagnosing] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const inputRef = useRef(null)
+
+  function handleDiagnose() {
+    const text = inputRef.current?.value?.trim() || 'AAPL'
+    setDiagnosing(true)
+    setProgress(0)
+
+    // Animate progress bar over 1.8s
+    const start = Date.now()
+    const duration = 1800
+    const tick = () => {
+      const elapsed = Date.now() - start
+      const pct = Math.min(100, Math.round((elapsed / duration) * 100))
+      setProgress(pct)
+      if (elapsed < duration) {
+        requestAnimationFrame(tick)
+      } else {
+        setDiagnosing(false)
+        if (typeof window !== 'undefined' && typeof window.showSitePopup === 'function') {
+          window.showSitePopup()
+        }
+      }
+    }
+    requestAnimationFrame(tick)
+  }
 
   const stocks = [
     { symbol: 'SPY', price: '$710.14', change: '+8.48 (+1.21%)' },
@@ -29,10 +50,23 @@ function App() {
   const iconSearch = '⌕'
   const iconBolt = '⚡'
   const iconStar = '★'
-  const iconDot = '●'
 
   return (
     <div className="app">
+      {/* Diagnostics Loading Overlay */}
+      {diagnosing && (
+        <div className="diagnose-overlay">
+          <div className="diagnose-card">
+            <div className="diagnose-spin" />
+            <p className="diagnose-text">正在对 <strong>{inputRef.current?.value?.trim() || 'AAPL'}</strong> 进行诊断...</p>
+            <div className="diagnose-bar-track">
+              <div className="diagnose-bar-fill" style={{ width: progress + '%' }} />
+            </div>
+            <p className="diagnose-pct">{progress}%</p>
+          </div>
+        </div>
+      )}
+
       <section className="hero js-reveal revealed">
         <div className="hero-grid" />
         <h1>
@@ -48,9 +82,9 @@ function App() {
         <div className="search-wrap">
           <div className="search-box">
             <span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',color:'var(--text-muted)',fontSize:18}}>{iconSearch}</span>
-            <input type="text" placeholder="Search any stock symbol (AAPL, TSLA...)" />
+            <input ref={inputRef} type="text" placeholder="Search any stock symbol (AAPL, TSLA...)" defaultValue="AAPL" />
           </div>
-          <button className="btn-cta" onClick={openPopup}>Diagnose with AI</button>
+          <button className="btn-cta" onClick={handleDiagnose}>Diagnose with AI</button>
           <p className="disclaimer">For informational purposes only. Not financial advice.</p>
         </div>
       </section>
@@ -131,7 +165,7 @@ function App() {
           </div>
         </div>
         <div className="comp-cta">
-          <button className="btn-cta" onClick={openPopup}>Start Free Diagnosis</button>
+          <button className="btn-cta" onClick={handleDiagnose}>Start Free Diagnosis</button>
         </div>
       </section>
 
@@ -150,25 +184,24 @@ function App() {
           <button className="modal-close" onClick={() => document.getElementById('modalPrivacy')?.close()}>Close ×</button>
         </div>
         <div className="modal-body">
-          <p className="modal-muted" style={{color:'#6b7280',fontSize:13,marginBottom:16}}>Last updated: May 2026</p>
+          <p style={{color:'#6b7280',fontSize:13,marginBottom:16}}>Last updated: May 2026</p>
           <h2>1. Who We Are</h2>
-          <p>This website and the AI Stock Diagnosis service are operated by AI Stock Diagnosis Platform ("we", "us" or "our"). If you have questions about this Privacy Policy, you can contact us through the diagnosis form on our site.</p>
+          <p>This website and the AI Stock Diagnosis service are operated by AI Stock Diagnosis Platform ("we", "us" or "our").</p>
           <h2>2. What Information We Collect</h2>
           <h3>a) Information you provide directly</h3>
-          <ul><li><strong>Contact details</strong>, such as your name, email address or phone number if you choose to share them.</li><li><strong>Messages and content</strong> that you send to us via the platform (for example, stock symbol queries or feedback).</li></ul>
+          <ul><li><strong>Contact details</strong>, such as your name, email address or phone number.</li><li><strong>Messages and content</strong> that you send to us via the platform.</li></ul>
           <h3>b) Information collected automatically</h3>
-          <p>When you visit this website, we may receive basic technical information sent by your browser, including:</p>
-          <ul><li>IP address and approximate location (country or city level).</li><li>Date, time and duration of access.</li><li>Pages or files viewed, referrer URL and basic device information (browser type, operating system).</li></ul>
+          <p>When you visit this website, we may receive basic technical information sent by your browser, including IP address, timestamp, pages viewed, and basic device information.</p>
           <h2>3. How We Use Your Information</h2>
-          <ul><li><strong>Provide the Service</strong> — to deliver AI-powered stock analysis and respond to your requests.</li><li><strong>Operate and secure the website</strong> — to monitor, maintain and improve the site and protect against abuse.</li><li><strong>Communicate with you</strong> — to send confirmations or follow-up messages related to your inquiries.</li><li><strong>Comply with legal obligations</strong> — to keep records where required by applicable law.</li></ul>
+          <ul><li><strong>Provide the Service</strong> — to deliver AI-powered stock analysis.</li><li><strong>Operate and secure the website</strong> — to monitor, maintain and improve the site.</li><li><strong>Comply with legal obligations</strong> — to keep records where required by law.</li></ul>
           <h2>4. How We Share Information</h2>
-          <p>We do <strong>not</strong> sell your personal information. We may share limited information with service providers who help us operate the website under confidentiality obligations, or with authorities where required by law.</p>
+          <p>We do <strong>not</strong> sell your personal information. We may share limited information with service providers under confidentiality obligations.</p>
           <h2>5. Your Rights</h2>
-          <p>Depending on your location, you may have rights such as access, correction, deletion of your personal information, and the right to object to or restrict certain forms of processing. To exercise these rights, please contact us.</p>
+          <p>Depending on your location, you may have rights such as access, correction, deletion of your personal information.</p>
           <h2>6. Security</h2>
-          <p>We take reasonable technical and organizational measures to protect personal information. No method of transmission or storage is completely secure, so we cannot guarantee absolute security.</p>
+          <p>We take reasonable technical and organizational measures to protect personal information.</p>
           <h2>7. Changes</h2>
-          <p>We may update this Privacy Policy from time to time. When we make material changes, we will adjust the "Last updated" date. Your continued use of the website constitutes acceptance of the revised policy.</p>
+          <p>We may update this Privacy Policy from time to time. Continued use constitutes acceptance of the revised policy.</p>
         </div>
       </dialog>
 
@@ -178,23 +211,21 @@ function App() {
           <button className="modal-close" onClick={() => document.getElementById('modalDisclaimer')?.close()}>Close ×</button>
         </div>
         <div className="modal-body">
-          <p className="modal-muted" style={{color:'#6b7280',fontSize:13,marginBottom:16}}>Last updated: May 2026</p>
-          <h2>1. Educational and Informational Purposes Only</h2>
-          <p>All content provided on this website (the "Content") is for <strong>general informational and educational purposes only</strong>. Nothing on this website is, or should be interpreted as:</p>
-          <ul><li>personalized financial, investment or trading advice;</li><li>a recommendation to buy, sell or hold any security, asset or instrument;</li><li>a solicitation, offer or invitation to engage in any investment strategy.</li></ul>
-          <p>The Content does not take into account your individual objectives, financial situation, risk tolerance or needs. You are solely responsible for any investment or trading decisions you make.</p>
-          <h2>2. No Guarantees or Promises of Performance</h2>
-          <p>The Content may refer to market data, price movements, volatility, or technical indicators. <strong>Past performance, historical patterns or simulated scenarios are not reliable indicators of future results.</strong> We do not guarantee or promise any particular outcome, profit or performance.</p>
-          <h2>3. Independent Decisions and Professional Advice</h2>
-          <p>Before making any investment, trading or financial decision, you should conduct your own independent research and analysis, and consider consulting a qualified financial, tax or legal professional. You should not rely solely on the Content when deciding whether to invest.</p>
+          <p style={{color:'#6b7280',fontSize:13,marginBottom:16}}>Last updated: May 2026</p>
+          <h2>1. Educational Purposes Only</h2>
+          <p>All content is for <strong>general informational and educational purposes only</strong>. Nothing on this website is personalized financial, investment or trading advice.</p>
+          <h2>2. No Guarantees</h2>
+          <p><strong>Past performance is not a reliable indicator of future results.</strong> We make no performance, profit or outcome guarantees.</p>
+          <h2>3. Independent Decisions</h2>
+          <p>Before making any investment decision, you should conduct your own independent research and consider consulting a qualified professional.</p>
           <h2>4. No Client Relationship</h2>
-          <p>The use of this website does <strong>not</strong> create any advisory, fiduciary, client, brokerage or other professional relationship between you and us.</p>
-          <h2>5. Data Sources and Accuracy</h2>
-          <p>The Content may be based on data from public sources. While we aim to use reliable sources, we cannot guarantee that any information is accurate, complete, up-to-date or error-free. Market data may be delayed or simplified for presentation.</p>
+          <p>The use of this website does <strong>not</strong> create any advisory, fiduciary, or client relationship.</p>
+          <h2>5. Data Sources</h2>
+          <p>Content may be based on data from public sources. We cannot guarantee accuracy or completeness. Market data may be delayed.</p>
           <h2>6. No Responsibility for Losses</h2>
-          <p>To the maximum extent permitted by applicable law, we shall not be liable for any direct, indirect, incidental, consequential or special damages, losses or expenses arising out of or in connection with your use of, or reliance on, the Content.</p>
-          <h2>7. Changes to These Terms</h2>
-          <p>We may update these Terms from time to time. When we make material changes, we will adjust the "Last updated" date. We encourage you to review this page periodically.</p>
+          <p>We shall not be liable for any damages or losses arising from your use of, or reliance on, the Content.</p>
+          <h2>7. Changes</h2>
+          <p>We may update these Terms from time to time. We encourage you to review this page periodically.</p>
         </div>
       </dialog>
     </div>
