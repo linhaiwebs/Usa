@@ -24,7 +24,6 @@ function App() {
     setDiagnoseStep(0)
     setDiagProgress(0)
     stepDone.current = [false, false, false, false]
-    setShowResult(false)
 
     const start = Date.now()
     const duration = 2000
