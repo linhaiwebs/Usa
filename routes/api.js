@@ -63,15 +63,6 @@ router.put('/templates/:name/category', (req, res) => {
   if (!result) return res.status(404).json({ error: 'Template not found' });
   res.json(result);
 });
-router.post('/templates/:name/sync', async (req, res) => {
-  try {
-    const result = await templateService.syncFromGithub(req.params.name);
-    res.json(result);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 // === Popups (per-template) ===
 router.get('/templates/:name/popup', (req, res) => {
   res.json(popupService.get(req.params.name));

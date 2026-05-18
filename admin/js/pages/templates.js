@@ -28,7 +28,6 @@ async function renderTemplates() {
               <button class="btn btn-sm cat-filter" data-cat="人设" onclick="filterByCategory('人设', this)">人设</button>
               <button class="btn btn-sm cat-filter" data-cat="诊股" onclick="filterByCategory('诊股', this)">诊股</button>
             </div>
-            <button class="btn btn-sm btn-success" onclick="syncAllTemplates()">从 GitHub 同步</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -358,26 +357,6 @@ async function renderTemplates() {
         setTimeout(() => { s.style.display = 'none'; }, 2500);
         showToast('弹窗已保存 — 已生效', 'success');
       } catch (e) { showToast(e.message, 'error'); }
-    };
-
-    // ---- GitHub 同步 ----
-    window.syncAllTemplates = async () => {
-      const name = activeName || (templates[0] && templates[0].name);
-      if (!name) return showToast('无可用模板', 'error');
-
-      const btn = document.activeElement;
-      btn.disabled = true;
-      btn.textContent = '同步中...';
-      try {
-        const result = await API.post(`/api/templates/${name}/sync`, {});
-        showToast(`同步完成: ${result.synced.length} 个模板已更新`, 'success');
-        setTimeout(() => renderTemplates(), 500);
-      } catch (e) {
-        showToast('同步失败: ' + e.message, 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '从 GitHub 同步';
-      }
     };
 
     // Ctrl+S 快捷键
