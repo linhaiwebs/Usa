@@ -147,6 +147,9 @@ app.use('/adsadmin', (req, res, next) => {
 // Admin static files
 app.use('/adsadmin', express.static(path.join(__dirname, 'admin')));
 
+// Template static assets (JS/CSS/images for built templates)
+app.use('/_tmpl', express.static(TEMPLATES_DIR, { dotfiles: 'allow' }));
+
 // --- API auth middleware ---
 app.use('/api', (req, res, next) => {
   // Public endpoints

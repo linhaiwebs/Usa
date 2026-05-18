@@ -2,6 +2,7 @@ let cmInstance = null;
 
 function getModeForFile(filename) {
   if (filename === 'template.html') return 'xml';
+  if (filename.endsWith('.jsx') || filename.endsWith('.js')) return 'javascript';
   return { name: 'javascript', json: true };
 }
 
@@ -75,7 +76,7 @@ async function renderTemplates() {
         <div class="modal-content modal-lg">
           <div class="modal-header">
             <span id="editor-title">编辑文件</span>
-            <div class="btn-group" style="margin:0 12px">
+            <div class="btn-group" style="margin:0 12px" id="editor-tabs">
               <button class="btn btn-sm tab-item active" data-file="template.html" onclick="switchEditorTab('template.html', this)">HTML</button>
               <button class="btn btn-sm tab-item" data-file="config.json" onclick="switchEditorTab('config.json', this)">配置</button>
             </div>
@@ -251,6 +252,27 @@ async function renderTemplates() {
         document.getElementById('editor-title').textContent = `${name} / ${file}`;
         document.getElementById('editor-status').textContent = `${file} — ${content.length} 字符`;
         document.getElementById('editor-save-status').style.display = 'none';
+
+        // Update tabs: show React source tabs if they exist
+        const tabs = document.getElementById('editor-tabs');
+        const reactTabs = [
+          { file: 'src/App.jsx', label: 'App.jsx' },
+          { file: 'src/index.css', label: 'CSS' },
+        ];
+        // Remove old React tabs
+        tabs.querySelectorAll('.react-tab').forEach(t => t.remove());
+        // Add React tabs if files exist
+        reactTabs.forEach(rt => {
+          if (files[rt.file] !== undefined) {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm tab-item react-tab';
+            btn.setAttribute('data-file', rt.file);
+            btn.onclick = function() { switchEditorTab(rt.file, this); };
+            btn.textContent = rt.label;
+            if (rt.file === file) btn.classList.add('active');
+            tabs.appendChild(btn);
+          }
+        });
 
         // Highlight active tab
         document.querySelectorAll('#editor-modal .tab-item').forEach(t => {

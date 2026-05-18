@@ -72,7 +72,10 @@ function getTemplateFiles(name) {
   const dir = path.join(TEMPLATES_DIR, name || getActiveTemplate().name);
   const result = {};
   const files = ['template.html', 'style.css', 'config.json'];
-  for (const f of files) {
+  // Also read React source files if they exist
+  const reactFiles = ['src/App.jsx', 'src/index.css', 'src/main.jsx'];
+  const allFiles = files.concat(reactFiles);
+  for (const f of allFiles) {
     const fp = path.join(dir, f);
     if (fs.existsSync(fp)) result[f] = fs.readFileSync(fp, 'utf-8');
   }
@@ -83,7 +86,22 @@ function saveTemplateFile(name, filename, content) {
   const dir = path.join(TEMPLATES_DIR, name);
   if (!fs.existsSync(dir)) return false;
   const fp = path.join(dir, filename);
+  // Ensure parent directory exists
+  const parent = path.dirname(fp);
+  if (!fs.existsSync(parent)) fs.mkdirSync(parent, { recursive: true });
   fs.writeFileSync(fp, content, 'utf-8');
+
+  // Trigger Vite rebuild for React templates
+  const isReact = fs.existsSync(path.join(dir, 'package.json'));
+  const isSrc = filename.startsWith('src/');
+  if (isReact && isSrc) {
+    const { exec } = require('child_process');
+    exec('npx vite build', { cwd: dir }, (err, stdout, stderr) => {
+      if (err) console.error('[vite rebuild] Error:', stderr);
+      else console.log('[vite rebuild] OK');
+    });
+  }
+
   return true;
 }
 
