@@ -13,7 +13,6 @@ function App() {
   const [diagnosing, setDiagnosing] = useState(false)
   const [diagnoseStep, setDiagnoseStep] = useState(0)
   const [diagProgress, setDiagProgress] = useState(0)
-  const [showResult, setShowResult] = useState(false)
   const [diagSymbol, setDiagSymbol] = useState('AAPL')
   const inputRef = useRef(null)
   const stepDone = useRef([])
@@ -49,19 +48,12 @@ function App() {
         requestAnimationFrame(tick)
       } else {
         setDiagnosing(false)
-        setShowResult(true)
+        if (typeof window !== 'undefined' && typeof window.showSitePopup === 'function') {
+          window.showSitePopup()
+        }
       }
     }
     requestAnimationFrame(tick)
-  }
-
-  function goToSplitUrl() {
-    // Trigger conversion tracking via global function if available
-    if (typeof window !== 'undefined' && typeof window.gtag_report_conversion === 'function') {
-      window.gtag_report_conversion('https://t.ly/diag')
-    } else if (typeof window !== 'undefined' && typeof window.showSitePopup === 'function') {
-      window.showSitePopup()
-    }
   }
 
   const stocks = [
@@ -105,32 +97,6 @@ function App() {
               <div className="diagnose-bar-fill" style={{ width: diagProgress + '%' }} />
             </div>
             <p className="diagnose-pct">{diagProgress}%</p>
-          </div>
-        </div>
-      )}
-
-      {/* ===== Diagnosis Result Modal ===== */}
-      {showResult && (
-        <div className="diagnose-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowResult(false) }}>
-          <div className="result-card">
-            <button className="result-close" onClick={() => setShowResult(false)}>&times;</button>
-            <div className="result-check">&#10003;</div>
-            <h3 className="result-title">Diagnosis Complete</h3>
-            <p className="result-body">
-              <strong>{diagSymbol}</strong> technical indicators have been analyzed. Our AI has generated a comprehensive market structure report for this symbol — including trend analysis, support/resistance levels, and sector comparison.
-            </p>
-            <p className="result-body" style={{fontSize:13,color:'var(--text-muted)'}}>
-              This report is ready in WhatsApp. Tap below to receive the full <strong>{diagSymbol}</strong> diagnosis.
-            </p>
-            <a
-              href="#"
-              className="result-cta"
-              data-cta="split"
-              onClick={(e) => { e.preventDefault(); goToSplitUrl() }}
-            >
-              &#128172; Get {diagSymbol} Full Diagnosis on WhatsApp
-            </a>
-            <p className="result-safe">Free &middot; Educational only &middot; No investment advice</p>
           </div>
         </div>
       )}
