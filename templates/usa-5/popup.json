@@ -1,8 +1,0 @@
-{
-  "enabled": true,
-  "type": "manual",
-  "title": "Unlock Premium Stock Diagnosis",
-  "content": "<p style=\"text-align:center;font-size:1.05em;margin-bottom:16px\">Get institutional-grade AI insights, price targets, and detailed risk reports for any ticker — free for a limited time.</p><a href=\"#\" data-cta=\"split\" style=\"display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#c3f400,#abd600);color:#161e00;border-radius:999px;text-decoration:none;font-weight:800;font-size:1em;box-shadow:0 0 20px rgba(195,244,0,0.15)\">Start Free Trial</a><p style=\"text-align:center;font-size:0.75em;color:#8e9379;margin-top:12px\">Free · Educational only · No investment advice</p>",
-  "delay": 0,
-  "showOnce": true
-}
