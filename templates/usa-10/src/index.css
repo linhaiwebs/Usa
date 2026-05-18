@@ -123,3 +123,12 @@ footer .edu { font-size: 10px; color: var(--text-muted); margin-bottom: 24px; ma
 /* Reveal */
 .js-reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
 .js-reveal.revealed { opacity: 1; transform: translateY(0); }
+
+/* Modal Content */
+.modal-body h2 { font-size: 18px; font-weight: 700; color: #111827; margin: 24px 0 10px; }
+.modal-body h2:first-child { margin-top: 4px; }
+.modal-body h3 { font-size: 15px; font-weight: 600; color: #374151; margin: 16px 0 6px; }
+.modal-body p { font-size: 14px; color: #374151; line-height: 1.7; margin: 6px 0; }
+.modal-body ul { margin: 8px 0 12px; padding-left: 20px; }
+.modal-body li { font-size: 14px; color: #374151; line-height: 1.7; margin: 2px 0; }
+.modal-body strong { color: #111827; }
